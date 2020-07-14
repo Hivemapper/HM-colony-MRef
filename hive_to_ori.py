@@ -18,7 +18,7 @@ pp = intrinsics['principal_point']
 ox, oy = pp[0], pp[1]
 fsx = width
 fsy = height
-rc = [-1, -1]
+rc = [width, height]
 s = 0
 
 extrinsics = data['extrinsics']   
