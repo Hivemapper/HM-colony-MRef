@@ -2,8 +2,9 @@ import json
 from itertools import chain
 
 camera_file   = "data/camera_data.json"
-output_folder = 'data/ori/'
-orilist_loc   = 'data/'
+data_folder   = 'data/'
+ori_folder    = "ori/"
+output_folder = 'data/'+ori_folder
 
 # Reading the json as a dict
 with open(camera_file) as json_data:
@@ -18,11 +19,11 @@ pp = intrinsics['principal_point']
 ox, oy = pp[0], pp[1]
 fsx = width
 fsy = height
-rc = [width, height]
+rc = [height, width]
 s = 0
 
 extrinsics = data['extrinsics']   
-orilist = open(orilist_loc+"orilist.txt", "w")
+orilist = open(data_folder+"orilist.txt", "w")
 
 for entry in extrinsics:
   i =  entry['key']
@@ -32,7 +33,7 @@ for entry in extrinsics:
   k = [fsx,   s, ox, 
          0, fsy, oy, 
          0,   0,  1]
-  outfile = output_folder+"{0:03}.or".format(i)
+  outfile = output_folder+"{0}.or".format(i+1)
   l1 = "$id {0:03}".format(i)
   l2 = "\n$rc{0:19}{1:19}".format(rc[0],rc[1])
   l3 = "\n$R"
@@ -48,7 +49,7 @@ for entry in extrinsics:
   for wline in [l1,l2,l3,l4,l5]:
     f.write(wline)
   f.close()
-  orilist.write(outfile+"\n")
+  orilist.write(ori_folder + "{0}.or\n".format(i+1))
 orilist.close()
 
 ##  Example: firstori.or
