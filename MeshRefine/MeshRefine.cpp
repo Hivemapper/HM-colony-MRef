@@ -178,7 +178,6 @@ void MeshRefine::process()
 			counter.setZero();
 
 			PRSTimer itertimer; itertimer.start();
-			energy=0;
 			pixsize=0.0;
 			nm=0;
 			//  *** Do the Relabeling ***
