@@ -32,8 +32,8 @@ EIGENINCPATH := -I/usr/local/include/eigen3/
 
 ### Embree
 # GAH an initial `sudo /sbin/ldconfig -v` fixed this problem!!
-EMBREEINCPATH := -I/home/centos/thirdparty/embree-2.11.0.x86_64.linux/include
-EMBREELIBPATH := -L/home/centos/thirdparty/embree-2.11.0.x86_64.linux/lib -lembree -L/home/centos/thirdparty/embree-2.11.0.x86_64.linux/lib -ltbb -L/home/centos/thirdparty/embree/build/lib/libembree.so
+EMBREEINCPATH := -I/usr/include
+EMBREELIBPATH := -L/usr/lib64 -lembree -L/usr/lib64 -ltbb
 
 ### Opencv
 OPENCVPATH := /usr/local
