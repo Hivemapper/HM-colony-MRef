@@ -399,7 +399,7 @@ void MeshMRF::process(const std::vector< std::string> &imglist, const std::vecto
 	// Optimization
 	timer.reset(); timer.start();
 	std::cout<<"\nOptimization ...";
-	float energy;
+	float energy = 0;
 	for (int i=0;i<maxiterations;i++) {
 		energy = _lbpgraph->optimize(1);
 		std::cout<< "testing...  ";
