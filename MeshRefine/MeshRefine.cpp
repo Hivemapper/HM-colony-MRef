@@ -178,13 +178,15 @@ void MeshRefine::process() {
 			//  *** Photometric and Semantic Consistency ***
 			// Iterate over all images
 			if (_verboselevel >= 0) {
-				std::cout << "\nLevel: " << pyr << "\tIteration: " << (iter + 1) << " / " << _ctr->_numitervec[pyr];
+				std::cout << "\nLevel: " << pyr << "\tIteration: " << (iter + 1) << " / " << _ctr->_numitervec[pyr] <<std::endl;
 			}
 			for (int i = 0; i < _adjacency->rows(); i++) {
 				// Check if image is a master
-				if ((*_adjacency)(i, i) > 0.0) {
+				if ( static_cast<int>((*_adjacency)(i, i)) % 5 == 0) {
 
-					if (_verboselevel >= 1) { std::cout << "\nProcessing baseimage " << i; }
+					std::cout << "aAdj: (*_adjacency)(i, i) -- i , "<< (*_adjacency)(i, i) << " -- " << i <<std::endl;
+
+					std::cout << "\nProcessing baseimage " << i;
 					// Load base image stuff
 					Orientation ori0 = orivec[i];
 					ori0.downscalePyr(pyr);
@@ -215,7 +217,7 @@ void MeshRefine::process() {
 						// avoid reference image
 						if ((*_adjacency)(i, j) > 0.0 && j != i) {
 
-							if (_verboselevel >= 1) { std::cout << "\nProcessing match image " << j; }
+							std::cout << "Processing match image " << j << std::endl;
 							// Load slave img stuff
 							PRSTimer timer2;
 							timer2.start();

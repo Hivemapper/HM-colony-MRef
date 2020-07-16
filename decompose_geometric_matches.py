@@ -7,6 +7,8 @@ import scipy.sparse as sparse
 
 geo_matches_file   = "data/geometric_matches"
 geo_matches_text   = "data/geometric_matches_decomp.txt"
+# putative_matches_file   = "data/putative_matches"
+# putative_matches_text   = "data/putative_matches_decomp.txt"
 
 
 # Reading the file

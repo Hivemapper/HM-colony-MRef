@@ -1,7 +1,7 @@
 import json
 from itertools import chain
 
-camera_file   = "data/camera_data.json"
+camera_file   = "data/camera_data_tf.json"
 data_folder   = 'data/'
 ori_folder    = "ori/"
 output_folder = 'data/'+ori_folder
