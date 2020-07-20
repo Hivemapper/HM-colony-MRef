@@ -106,6 +106,8 @@ GradCalcStereo::GradCalcStereo
 	_rt0=new RayTracer(*_mesh);
     	_rt0->setView(_tfar,_tnear, *_ori0,false);
     	_rt0->traceRaysColumnWise();
+  _rt1=new RayTracer(*_mesh);
+
 }
 
 void GradCalcStereo::setSecondView(	cv::Mat &img1,
@@ -134,9 +136,8 @@ void GradCalcStereo::setSecondView(	cv::Mat &img1,
 	if(_smode==ON)_jaclabels1y=new LikelihoodImage(_rows1,_cols1,_numlabels);
 
 	// Set up the Raytracer
-	_rt1=new RayTracer(*_mesh);
-    	_rt1->setView(_tfar,_tnear, *_ori1,false);
-    	_rt1->traceRaysColumnWise();
+  _rt1->setView(_tfar,_tnear, *_ori1,false);
+  _rt1->traceRaysColumnWise();
 }
 
 GradCalcStereo::~GradCalcStereo()
