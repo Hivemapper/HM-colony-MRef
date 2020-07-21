@@ -1,3 +1,6 @@
 
 .DS_Store
-data/*
+data/ori/*.or
+data/mesh/*.ply
+data/img/*.png
+
