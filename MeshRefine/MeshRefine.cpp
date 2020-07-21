@@ -140,6 +140,7 @@ double MeshRefine::photoConsistency() {
   PRSTimer timer2;
   LikelihoodImage limg0;
   LikelihoodImage limg1;
+  int image_pairs = 0;
 //  cv::Mat img1;
 //  cv::Mat img0;
 
@@ -179,6 +180,7 @@ double MeshRefine::photoConsistency() {
       for (int j = 0; j < _adjacency->cols(); j++) {
         // avoid reference image
         if ((*_adjacency)(i, j) > 0.0 && j != i) {
+          image_pairs += 1;
           // if(_verboselevel>=1) { std::cout <<"\nProcessing match image "<<j;}
           // Load slave img stuff
           timer2.start();
@@ -226,7 +228,8 @@ double MeshRefine::photoConsistency() {
       }
 //    }
   }
-  return energy;
+  std::cout << "\n\t num image_pairs: " << image_pairs << std::endl;
+  return energy/image_pairs;
 }
 
 // Main procesing function
