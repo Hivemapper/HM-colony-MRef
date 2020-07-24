@@ -108,7 +108,7 @@ void ControlRefine::readFile(const std::string& name)
 	ControlReader reader;
 
 	// Set the stuff to read
-	reader.setVar("#Verboselevel", &_verboselevel);
+	reader.setVar("#VerboseLevel", &_verboselevel);
 	reader.setVar("#StartPyr", &_startlevel);
 	reader.setVar("#EndPyr", &_endlevel);
 	reader.setVec("#RefineIterations",&_numitervec);
