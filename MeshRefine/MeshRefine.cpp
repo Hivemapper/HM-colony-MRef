@@ -240,6 +240,7 @@ void MeshRefine::process() {
   double energy = 0;
   double pixsize;
   int nm;
+  int image_pairs = 0;
 
   std::vector <Orientation> orivec;
   computeAdaptedOrientation(orivec);
@@ -272,7 +273,7 @@ void MeshRefine::process() {
           std::cout << "\n||> Semantic Optimization <||";
         }
         Eigen::Vector3d offset = Eigen::Vector3d::Zero(3);
-        MeshMRF meshmrf(_mesh, _mmd, 5);
+        MeshMRF meshmrf(_mesh, _mmd, 8);
         meshmrf.process(_imglistsem->getList(), _orilist->getList(), _ctr->_nummrfitervec[pyr]);
       }
       if (_verboselevel >= 0) {
@@ -318,6 +319,7 @@ void MeshRefine::process() {
           for (int j = 0; j < _adjacency->cols(); j++) {
             // avoid reference image
             if ((*_adjacency)(i, j) > 0.0 && j != i) {
+              image_pairs += 1;
 
               if (_verboselevel >= 1) { std::cout << "\nProcessing match image " << j; }
               // Load slave img stuff
@@ -342,7 +344,9 @@ void MeshRefine::process() {
               // and if available Semantic data terms
               double img_energy = gradcomp.process();
               energy += img_energy;
-              std::cout << "IMG " << i << " " << j << "Energy: " << img_energy << std::endl;
+              std::cout << "IMG " << i << " " << j << " img_energy: " << img_energy;
+              std::cout << " \t Energy: " << energy << std::endl;
+
               //energy+=gradcomp.process();
               pixsize += gradcomp.computeTriangleSizeInPix();
 
@@ -364,6 +368,9 @@ void MeshRefine::process() {
           }
         }
       }
+      std::cout << "\n\t num image_pairs: " << image_pairs << std::endl;
+      std::cout << "\n\t energy/image_pairs: " << energy/image_pairs << std::endl;
+
       if (_verboselevel >= 0) {
         std::cout << "\nEnergy=" << energy << " || Delta energy=" << energy - oldenergy << " || Av. face size="
                   << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n";
