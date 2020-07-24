@@ -306,7 +306,11 @@ void GradCalcStereo::updateTIDImagesOcclusions
 
 	Eigen::MatrixXd eP1=ori1.getP();
 	cv::Mat P1(3,4,CV_32F);
-	for(int r=0; r<3;r++) for(int c=0; c<4;c++) P1.at<float>(r,c)=eP1(r,c);
+	for(int r=0; r<3;r++) {
+		for(int c=0; c<4;c++) {
+			P1.at<float>(r,c)=eP1(r,c);
+		}
+	}
 
 	Eigen::Vector3d C0=ori0.getC();	
 
@@ -322,8 +326,8 @@ void GradCalcStereo::updateTIDImagesOcclusions
 		{
 			if(tid0.at<int>(y0,x0)>=0)
 			{
-			    	Xbuffer[0]=XYZ0.at<cv::Vec3f>(y0,x0)[0];
-			    	Xbuffer[1]=XYZ0.at<cv::Vec3f>(y0,x0)[1];
+			  Xbuffer[0]=XYZ0.at<cv::Vec3f>(y0,x0)[0];
+			  Xbuffer[1]=XYZ0.at<cv::Vec3f>(y0,x0)[1];
 				Xbuffer[2]=XYZ0.at<cv::Vec3f>(y0,x0)[2];
 				Xbuffer[3]=1.0;
 
@@ -346,11 +350,11 @@ void GradCalcStereo::updateTIDImagesOcclusions
 					// Bilinear interpolation is missing
 				    	distpt=	pow(Xbuffer[0]-XYZ1.at<cv::Vec3f>(y1int,x1int)[0],2.0)+
 					    	pow(Xbuffer[1]-XYZ1.at<cv::Vec3f>(y1int,x1int)[1],2.0)+
-						pow(Xbuffer[2]-XYZ1.at<cv::Vec3f>(y1int,x1int)[2],2.0);
+					    	pow(Xbuffer[2]-XYZ1.at<cv::Vec3f>(y1int,x1int)[2],2.0);
 
 				    	dist0=	pow(Xbuffer[0]-C0(0),2.0)+
 					    	pow(Xbuffer[1]-C0(1),2.0)+
-						pow(Xbuffer[2]-C0(2),2.0);
+						    pow(Xbuffer[2]-C0(2),2.0);
 
 					// Check distance
 					if(fabs(distpt)>dist0*_SMALLVALL_TRACECONSISTENT)
