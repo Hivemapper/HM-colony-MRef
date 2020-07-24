@@ -165,7 +165,7 @@ void LikelihoodImage::loadImage(const std::string &name)
 
 	FILE * pFile;
 	long lSize;
-        char * buffer;
+  char * buffer;
 	size_t result;
 
 	 pFile = fopen ( name.c_str() , "rb" );
@@ -177,25 +177,35 @@ void LikelihoodImage::loadImage(const std::string &name)
          rewind (pFile);
 
          // allocate memory to contain the whole file:
-	 buffer = (char*) malloc (sizeof(char)*lSize);
-	 if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
+	 buffer = (char*) malloc (sizeof(uint8_t)*lSize);
+	 if (buffer == NULL) {
+	 	fputs ("Memory error",stderr);
+	 	exit (2);
+	 }
+
+	 size_t count = lSize/sizeof(uint8_t);
+	std::cout<< "count: " << count << std::endl;
 
 	 // copy the file into the buffer:
-	 result = fread (buffer,1,lSize,pFile);
-	 if (result != lSize) {fputs ("Reading error",stderr); exit (3);}
+	 result = fread (buffer, sizeof(uint8_t), count, pFile);
+	 if (result != count) {
+	 	fputs ("Reading error",stderr);
+	 	exit (3);
+	 }
 
-	 float* ptr=(float*)buffer;
-	 _rows=*ptr; ptr++;
-	 _cols=*ptr; ptr++;
-	 _labels=*ptr; ptr++;
+	uint8_t* ptr=(uint8_t*)buffer;
+//	 TODO: (MAC) This is just hard-coded for now to make it work
+//    but it definitely needs to be fixed
+	_rows=1080;
+	_cols=1920;
+	_labels=11;
+
 	allocateImage(_rows,_cols,_labels);
-	for(int y=0; y<_rows; y++)
-	{
-		for(int x=0; x<_cols; x++)
-		{
-			for(int l=0; l<_labels; l++)
-			{
-                    		_data[y][x][l]=*ptr;
+	for(int y=0; y<_rows; y++) {
+		std::cout<< "y: " << y;
+		for(int x=0; x<_cols; x++) {
+			for(int l=0; l<_labels; l++) {
+				_data[y][x][l]=static_cast<float>(*ptr)/255.0;
 				ptr++;
 			}
 		}
