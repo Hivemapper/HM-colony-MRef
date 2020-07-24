@@ -209,7 +209,7 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 	int modelcount=0;
     	for( s=0; s<imglist.size(); s++)
 	{
-		//std::cout<<"\nProcessing imgid ["<<s<<"]";
+		std::cout<<"\nProcessing imgid ["<<s<<"]" << std::endl;
 		PRSTimer timer;
 		timer.start();
 		std::cout<<" line 215 meshmrf " << std::endl;
@@ -261,8 +261,11 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 		//exit(1);
 
 		// Check if input is sane
-	    	if(cols!=ori.cols() || rows!=ori.rows()) {std::cout<<"MeshMRF.cpp: Image and ori cols/rows differ, exit."
-		<< rows <<"<->"<<ori.rows()<< " "<<cols <<"<->"<< ori.cols(); exit(1);}
+	    	if(cols!=ori.cols() || rows!=ori.rows()) {
+	    		std::cout<<"MeshMRF.cpp: Image and ori cols/rows differ, exit." << std::endl;
+	    		std::cout << rows <<"<->"<<ori.rows()<< " "<<cols <<"<->"<< ori.cols() << std::endl;
+	    		exit(1);
+	    	}
 		std::cout<<" line 261 meshmrf " << std::endl;
 		// Set the ray tracer
 		_rtracer->setView(TFAR, TNEAR, ori);
