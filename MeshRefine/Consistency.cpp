@@ -208,14 +208,14 @@ int main(int argc, char* argv[]){
 
   printSummary(tilestoprocess,outfilenames,meshlist);
 
-    MyMesh mesh; // mesh with original vertices
-    std::string meshname(meshlist.getElement(0));
-    int numverts = mesh.n_vertices();
+  MyMesh mesh; // mesh with original vertices
+  std::string meshname(meshlist.getElement(0));
   MeshIO::readMesh(mesh, meshname, true, false);
+  int numverts = mesh.n_vertices();
 
-    // Read mesh meta data
-    FDUtil::exchangeExtension(meshname,"mmd");
-    MeshMetaData mmd(meshname);
+  // Read mesh meta data
+  FDUtil::exchangeExtension(meshname,"mmd");
+  MeshMetaData mmd(meshname);
 
     //  *** Photometric and Semantic Consistency ***
     // Boostrap full adjancy matrix
@@ -246,11 +246,14 @@ int main(int argc, char* argv[]){
 
     MeshRefine refmod(&mesh, &mmd, &ctr, &adjacency, &imglist, &likelilist, &orilist);
    refmod.process();
-  std::cout<<"\nSaving..."<<outfilenames[0];
+
+  std::cout<<"\nSaving..."<<outfilenames[0] << std::endl;
   mesh.request_face_colors();
   MeshConv::faceLabelToFaceColorICCV(mesh);
-  MeshIO::writeMesh(mesh, outfilenames[0],true,false);
+//  void writeMesh( const MyMesh &mesh, const std::string &savename, const bool hasvertcolor ,const bool hasfacecolor,const bool hasvertnormal=false, const bool hasfacetexture=false );
+  MeshIO::writeMesh(mesh, outfilenames[0],true,true, false, true);
   std::cout<<"..Done";
+
 
     return 0;
 

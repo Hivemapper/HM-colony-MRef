@@ -21,6 +21,7 @@ OBJECTS = DataCopy.o  GradThinPlate.o DMDI2.o GradCalcStereo.o MeshScaler.o View
 
 all: lib exe
 lib: $(OBJECTS) libgradcalcstereo.a
+test_grad: test_grad.o test_grad
 exe: Consistency.o Consistency
 
 .PHONY:  all

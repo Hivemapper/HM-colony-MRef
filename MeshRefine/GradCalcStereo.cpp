@@ -312,6 +312,7 @@ void GradCalcStereo::updateTIDImagesOcclusions
 {
 	_meandist=0;
 	int counter=0;
+	int nohitcounter=0;
 
     	float _SMALLVALL_TRACECONSISTENT=0.001;
     	float distpt, dist0;
@@ -361,6 +362,7 @@ void GradCalcStereo::updateTIDImagesOcclusions
 				{ // Is pt seen in second img?
 
 			    	    tid0.at<int>(y0,x0)=-1;
+			    	    nohitcounter++;
 				    continue;
 				}
 				else
@@ -393,6 +395,11 @@ void GradCalcStereo::updateTIDImagesOcclusions
 			}
 		}
 	}
+	std::cout<< "================================"<< std::endl;
+	std::cout<< "nohitcounter: " << nohitcounter << std::endl;
+	std::cout<< "counter:      " << counter << std::endl;
+	std::cout<< "_meandist:    " << _meandist/(double)counter << std::endl;
+	std::cout<< "================================"<< std::endl;
 	_meandist/=(double)counter;
 }
 

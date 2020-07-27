@@ -414,8 +414,11 @@ void MeshMRF::process(const std::vector< std::string> &imglist, const std::vecto
 
 	// Assign resulting face labels to graph
 	assignMinLabels();
+	delete _lbpgraph;
+	std::cout<<" line 426 meshmrf " << std::endl;
+	_lbpgraph=nullptr;
+	std::cout<<" line 428 meshmrf " << std::endl;
 
-	delete _lbpgraph; _lbpgraph=NULL;
 }
 
 

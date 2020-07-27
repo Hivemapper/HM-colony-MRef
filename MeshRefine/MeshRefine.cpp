@@ -272,8 +272,8 @@ void MeshRefine::process() {
         if (_verboselevel >= 0) {
           std::cout << "\n||> Semantic Optimization <||";
         }
-        Eigen::Vector3d offset = Eigen::Vector3d::Zero(3);
-        MeshMRF meshmrf(_mesh, _mmd, 8);
+//        Eigen::Vector3d offset = Eigen::Vector3d::Zero(3);
+        MeshMRF meshmrf(_mesh, _mmd, 11);
         meshmrf.process(_imglistsem->getList(), _orilist->getList(), _ctr->_nummrfitervec[pyr]);
       }
       if (_verboselevel >= 0) {
