@@ -210,8 +210,8 @@ int main(int argc, char* argv[]){
 
     MyMesh mesh; // mesh with original vertices
     std::string meshname(meshlist.getElement(0));
-    MeshIO::readMesh(mesh, meshname, false, false);
     int numverts = mesh.n_vertices();
+  MeshIO::readMesh(mesh, meshname, true, false);
 
     // Read mesh meta data
     FDUtil::exchangeExtension(meshname,"mmd");
@@ -249,7 +249,7 @@ int main(int argc, char* argv[]){
   std::cout<<"\nSaving..."<<outfilenames[0];
   mesh.request_face_colors();
   MeshConv::faceLabelToFaceColorICCV(mesh);
-  MeshIO::writeMesh(mesh, outfilenames[0],true,true);
+  MeshIO::writeMesh(mesh, outfilenames[0],true,false);
   std::cout<<"..Done";
 
     return 0;

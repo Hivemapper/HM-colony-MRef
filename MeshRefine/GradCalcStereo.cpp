@@ -106,13 +106,18 @@ GradCalcStereo::GradCalcStereo
 	_rt0=new RayTracer(*_mesh);
     	_rt0->setView(_tfar,_tnear, *_ori0,false);
     	_rt0->traceRaysColumnWise();
+
   _rt1=new RayTracer(*_mesh);
+	if(_smode==ON) {
+		_jaclabels1x = new LikelihoodImage();
+		_jaclabels1y = new LikelihoodImage();
+	}
 
 }
 
 void GradCalcStereo::setSecondView(	cv::Mat &img1,
 					LikelihoodImage* limage1,
-					Orientation* ori1 )
+					Orientation* ori1)
 {
 	// Set the members
 	_img1=img1;
@@ -132,10 +137,23 @@ void GradCalcStereo::setSecondView(	cv::Mat &img1,
 	_jacimg1x.create(_rows1,_cols1,CV_32F);
 	_jacimg1y.create(_rows1,_cols1,CV_32F);
 
-	if(_smode==ON)_jaclabels1x=new LikelihoodImage(_rows1,_cols1,_numlabels);
-	if(_smode==ON)_jaclabels1y=new LikelihoodImage(_rows1,_cols1,_numlabels);
 
-	// Set up the Raytracer
+
+	if(_smode==ON) {
+		if (_jaclabels1x) {
+			std::cout << " GradCalcStereo line 139, _jaclabels1x exists" << std::endl;
+			_jaclabels1x->delocateImage();
+			_jaclabels1x = new LikelihoodImage(_rows1,_cols1,_numlabels);
+		}
+		if (_jaclabels1y) {
+			std::cout << " GradCalcStereo line 143, _jaclabels1y exists" << std::endl;
+			_jaclabels1y->delocateImage();
+			_jaclabels1y = new LikelihoodImage(_rows1,_cols1,_numlabels);
+		}
+
+	}
+
+//	// Set up the Raytracer
   _rt1->setView(_tfar,_tnear, *_ori1,false);
   _rt1->traceRaysColumnWise();
 }
@@ -879,7 +897,9 @@ double GradCalcStereo::process()
 }
 }
 	timer.stop();
-	if(_verboselevel>=2){ std::cout<<"\n Raytracing stuff ["<<timer.getTimeSec()<<" sec]"; }
+	if(_verboselevel>=2) {
+		std::cout<<" Raytracing stuff ["<<timer.getTimeSec()<<" sec]" << std::endl;
+	}
 	// Update the masks and get undistortion maps ... (ocv GPU implemetation available)
 	cv::Mat map0x(rows0,cols0,CV_32F);
 	cv::Mat map0y(rows0,cols0,CV_32F);
@@ -892,14 +912,18 @@ double GradCalcStereo::process()
 	// Compute more global helpers
 	calcHelpers(*_ori0, *_ori1, xyz0, tid0);
 	timer.stop();
-	if(_verboselevel>=2){ std::cout<<"\n calcHelpers done ["<<timer.getTimeSec()<<" sec]"; }
+	if(_verboselevel>=2) {
+		std::cout<<" calcHelpers done ["<<timer.getTimeSec()<<" sec]" << std::endl;
+	}
 
 	//ImgIO::saveVisLikeli(*_limage1,2,"/home/mathias/AlmostTrash/test.png"); exit(1);
 	// Compute the image similarity and the constrast sensitive weights
 	timer.reset(); timer.start();
 	energy=calcSimilarity(smode, tid0);
 	timer.stop();
-	if(_verboselevel>=2){ std::cout<<"\n calcSim done ["<<timer.getTimeSec()<<" sec]"; }
+	if(_verboselevel>=2) {
+		std::cout<<" calcSim done ["<<timer.getTimeSec()<<" sec]" << std::endl;
+	}
 	
 	//cv::imwrite("/home/mathias/AlmostTrash/test.png", _jacimg10x);
 
@@ -908,7 +932,9 @@ double GradCalcStereo::process()
 	updateGrad(uvimg0,tid0,*_ori0);
 	timer.stop();
 
-	if(_verboselevel>=2){ std::cout<<"\n update grad done ["<<timer.getTimeSec()<<" sec]"; }
+	if(_verboselevel>=2) {
+		std::cout<<" update grad done ["<<timer.getTimeSec()<<" sec]" << std::endl;
+	}
 	return energy;
 }
 
