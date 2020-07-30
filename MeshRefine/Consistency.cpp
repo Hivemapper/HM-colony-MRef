@@ -249,9 +249,11 @@ int main(int argc, char* argv[]){
 
   std::cout<<"\nSaving..."<<outfilenames[0] << std::endl;
   mesh.request_face_colors();
+  mesh.request_vertex_colors();
   MeshConv::faceLabelToFaceColorICCV(mesh);
+  std::cout<<" consistency.cpp: line 261" << std::endl;
+  MeshIO::writeMesh(mesh, outfilenames[0],true,true, false, false);
 //  void writeMesh( const MyMesh &mesh, const std::string &savename, const bool hasvertcolor ,const bool hasfacecolor,const bool hasvertnormal=false, const bool hasfacetexture=false );
-  MeshIO::writeMesh(mesh, outfilenames[0],true,true, false, true);
   std::cout<<"..Done";
 
 
