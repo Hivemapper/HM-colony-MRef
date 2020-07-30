@@ -19,7 +19,7 @@ RayTracer::RayTracer( MyMesh &mesh ) :
     _neg(false)
 {
 	//// Init the number of threads 
-	tbb::task_scheduler_init tbbinit(3);
+	tbb::task_scheduler_init tbbinit(16);
     	init();
     	setScene(mesh);
 }

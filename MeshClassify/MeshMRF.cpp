@@ -232,7 +232,7 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 		// Check if there is some intersection
 		if(!hitsModel(ori))
 		{
-			std::cout<<"\nSkipping image: no projection";
+			std::cout<<"\nSkipping image: no projection" << std::endl;
 		 	continue;
 		}
 		else
@@ -394,14 +394,14 @@ void MeshMRF::process(const std::vector< std::string> &imglist, const std::vecto
 	// Optimization
 	timer.reset(); timer.start();
 	std::cout<<"\nOptimization ...";
-	float energy;
-	for(int i=0;i<maxiterations;i++)
-	{
-		energy=_lbpgraph->optimize(1);
-		//std::cout<<"\nEnergy="<<energy;
+	float energy = 0;
+	for (int i=0;i<maxiterations;i++) {
+		energy = _lbpgraph->optimize(1);
+		std::cout<< "testing...  ";
+		std::cout<< "Energy_opt_e6 = " << energy*0.000001 << std::endl;
 	}
 	timer.stop();
-	std::cout<<"\nEnergy="<<energy;
+	std::cout<<"\n Energy = "<< energy << std::endl;
 	//std::cout<< " done." << timer.getTimeSec();
 
 	// Assign resulting face labels to graph

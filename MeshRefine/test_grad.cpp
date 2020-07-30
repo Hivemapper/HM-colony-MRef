@@ -20,6 +20,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 static void showUsage(std::string name )
 {
@@ -123,7 +126,7 @@ void prepareOutput(const std::string basepath, const IOList& tilelist, const std
 	// Make the new output files
 	for(int i=0; i<tilenum.size(); i++)
 	{
-	    	std::string filename=basepath;
+	  std::string filename=basepath;
 		filename.append("/out/");
 		filename.append(tilelist.getNameWithoutEnding(tilenum[i]));
 		filename.append(".obj");
@@ -187,6 +190,31 @@ void printSummary(const std::vector<int>& tilestoprocess, const std::vector<std:
 	}
 }
 
+Eigen::MatrixXf readMatrix(std::string filename, Eigen::MatrixXf result){
+  std::fstream infile;
+  infile.open(filename);
+  if (infile.is_open()){
+    std::string line;
+    int i = 0;
+    while (std::getline(infile, line))
+    { 
+      std::istringstream stream(line);
+      std::string element;
+      int j = 0;
+      while (std::getline(stream, element, ','))
+      {
+        int val;
+        std::stringstream conv(element);
+        conv >> val;
+        result(i, j) = val;
+        j++;
+      }
+      i++;
+    }
+  }
+  return result;
+};
+
 int main(int argc, char* argv[])
 {
 	std::string basepath;
@@ -209,9 +237,9 @@ int main(int argc, char* argv[])
        // std::string basepath="/media/data/mathias/Zuerich_ObliquePenta/NewLists/";
 
 	std::string imglistname=basepath; imglistname.append("/imglist.txt");
-    	std::string likelilistname=basepath; likelilistname.append("/likelilist.txt");
-    	std::string orilistname=basepath; orilistname.append("/orilist.txt");
-    	std::string meshlistname=basepath; meshlistname.append("/meshlist.txt");
+    std::string likelilistname=basepath; likelilistname.append("/likelilist.txt");
+    std::string orilistname=basepath; orilistname.append("/orilist.txt");
+    std::string meshlistname=basepath; meshlistname.append("/meshlist.txt");
 	std::string controlfilename=basepath; controlfilename.append("/ControlRefine.txt");
 
 	IOList imglist(imglistname);
@@ -219,7 +247,7 @@ int main(int argc, char* argv[])
 	IOList orilist(orilistname);
 	IOList meshlist(meshlistname);
 
-        // Read Controlfile
+    // Read Controlfile
 	ControlRefine ctr;
 	if(!boost::filesystem::exists(controlfilename.c_str()))
 	{
@@ -267,28 +295,12 @@ int main(int argc, char* argv[])
 		
 		// Boostrap full adjancy matrix
 		Eigen::MatrixXf adjacency(orilist.size(),orilist.size());
-	
-		
-		adjacency<< 	1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-				1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,
-				0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,
-				0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,
-				0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,
-				0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,
-				0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
-				0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,
-				0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,
-				0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,
-				0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,
-				0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,
-				0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,
-				0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,
-				0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+		adjacency = readMatrix(basepath.append("/adjacency.txt"), adjacency);
 
 		// Prepare data (copy to local space near the node edge)
 		if(ctr._preparedata)
 		{
-		    	prepareData(adjacency,imglist,orilist,likelilist,ctr);
+		    prepareData(adjacency,imglist,orilist,likelilist,ctr);
 		}
 		PRSTimer tiletimer; tiletimer.start();
 		MeshRefine refmod(&mesh, &mmd, &ctr, &adjacency, &imglist, &likelilist, &orilist );

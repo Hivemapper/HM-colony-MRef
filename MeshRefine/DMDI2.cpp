@@ -156,20 +156,31 @@ void DMDI2::scaleImgsToOne(cv::Mat& fimg1, cv::Mat& fimg2)
 
 double DMDI2::calcEnergy(cv::Mat& valimg, cv::Mat& ncimg)
 {
-    	double energy=0.0;
-	int count=0;
-	for(int y=0; y<valimg.rows; y++)
+	// Slightly More Optimized Version - MRC
+	// int count = cv::countNonZero(valimg);
+	// cv::patchNaNs(ncimg);
+	// valimg.convertTo(valimg, CV_32F, 1.f/255);
+	// cv::Mat energy_matrix = valimg.mul(ncimg);
+	// double energy = -cv::sum(cv::abs(energy_matrix))[0];
+    double energy = 0.0;
+	int count = 0;
+	for(int y = 0; y<valimg.rows; y++)
 	{
 		for(int x=0; x<valimg.cols; x++)
 		{
 			if(valimg.at<unsigned char>(y,x)>0)
 			{
-				energy-=ncimg.at<float>(y,x);
+				double nc_val = std::abs(ncimg.at<float>(y, x));
+				if (std::isnan(nc_val)){
+					nc_val = 0;
+				}
+				energy -= nc_val;
 				count++;
 			}
 		}
 	}
 	return count>0 ? energy/(double)count : 0.0;
+
 }
 
 void DMDI2::compute(	cv::Mat &img1, cv::Mat &img2, cv::Mat &valimg, int kernelsize, MATCHINGCOST matchingcost,
