@@ -35,6 +35,10 @@ void readMesh( MyMesh &ommesh, std::string savename, bool hasvertcolor, bool has
 	{
 	    	ommesh.request_vertex_colors();
         	ropt += OpenMesh::IO::Options::VertexColor;
+		if (!ommesh.has_vertex_colors())
+		{
+			std::cerr << "ERROR: Standard vertex property 'Colors' not available!\n";
+		}
 	}
 	if( hasvertnormal)
 	{
@@ -59,8 +63,8 @@ void readMesh( MyMesh &ommesh, std::string savename, bool hasvertcolor, bool has
 	else if(extension==".ply")
 	{
 	    	OpenMesh::IO::_PLYReader_();
-
-		ropt+=OpenMesh::IO::Options::Binary;
+//     TODO: this needs to be a check, but for now my ply file is ascii, so read it as such
+//		ropt+=OpenMesh::IO::Options::Binary;
 		if ( ! OpenMesh::IO::read_mesh(ommesh, savename.c_str(), ropt ))
         	{
         		std::cerr << "Error loading mesh from file " << savename << std::endl;
@@ -68,9 +72,9 @@ void readMesh( MyMesh &ommesh, std::string savename, bool hasvertcolor, bool has
 	}
 }
 
-void writeMesh( const MyMesh &mesh, const std::string &savename, const bool hasvertcolor, const bool hasfacecolor, const bool hasvertnormal, const bool hasfacetexture )
-{
-
+void writeMesh( const MyMesh &mesh, const std::string &savename,
+								const bool hasvertcolor, const bool hasfacecolor,
+								const bool hasvertnormal, const bool hasfacetexture ) {
 
     	// Check which extension
     	std::string extension=boost::filesystem::extension(savename); 
