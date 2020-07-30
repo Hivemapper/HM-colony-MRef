@@ -375,6 +375,7 @@ void MeshRefine::process() {
         std::cout << "\nEnergy=" << energy << " || Delta energy=" << energy - oldenergy << " || Av. face size="
                   << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n";
       }
+      image_pairs = 0;
       oldenergy = energy;
 
       scaleGradByCounter(grad, counter);
