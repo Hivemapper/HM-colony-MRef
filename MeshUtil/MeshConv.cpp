@@ -114,25 +114,33 @@ void faceLabelToFaceColorICCV(MyMesh &mesh)
 	for(MyMesh::FaceIter f_it=mesh.faces_begin(); f_it!=mesh.faces_end(); ++f_it)
 	{
 		s=mesh.data(*f_it).labelid();
-		if(s==0) //Facade
+		if(s==0) // Unknown
 		{
-			mesh.set_color(*f_it, MyMesh::Color(150,0,150));
+			mesh.set_color(*f_it, MyMesh::Color(0 ,0, 0));
 		}
-		else if(s==1) //Ground
+		else if(s==1) //Mobile objects like planes, trains, cars, animals, and people
 		{
-			mesh.set_color(*f_it, MyMesh::Color(60,60,60));
+			mesh.set_color(*f_it, MyMesh::Color(255, 0, 0));
 		}
-		else if(s==2) //Vegetation
+		else if(s==2) // High vegetation like trees (~>20cm)
 		{
-			mesh.set_color(*f_it, MyMesh::Color(0,200,0));
+			mesh.set_color(*f_it, MyMesh::Color(0,255,0));
 		}
-		else if(s==3) //Roof
+		else if(s==3) // Natural ground (~<20cm)
 		{
-			mesh.set_color(*f_it, MyMesh::Color(200,200,0));
+			mesh.set_color(*f_it, MyMesh::Color(205,133,63));
 		}
-		else if(s==4) //Clutter
+		else if(s==4) // Ground-level man-made objects like pavement
 		{
-			mesh.set_color(*f_it, MyMesh::Color(0, 0,200));
+			mesh.set_color(*f_it, MyMesh::Color(255, 255, 0));
+		}
+		else if(s==5) // Buildings and man-made structures rising above ground-level
+		{
+			mesh.set_color(*f_it, MyMesh::Color(255, 255, 255));
+		}
+		else if(s==6) // Water
+		{
+			mesh.set_color(*f_it, MyMesh::Color(0, 0, 255));
 		}
 	}
 }
