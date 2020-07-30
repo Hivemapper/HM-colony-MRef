@@ -301,7 +301,8 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 		delete limage;
 	}
 	std::cout<<"\nAv. size of model projection "<<float(floor(allpercvalid*10000/modelcount))/100.0<<"%.";
-	delete _rtracer; _rtracer=NULL;
+	delete _rtracer;
+	_rtracer=NULL;
 }
 
 void MeshMRF::calcDataCostPrior()
@@ -383,9 +384,9 @@ void MeshMRF::assignMinLabels()
 void MeshMRF::process(const std::vector< std::string> &imglist, const std::vector< std::string > &orilist, const int maxiterations)
 {
 	// For each face compute the data cost of each label
-    	std::cout<<"\nAssigning costs to faces...";
-    	PRSTimer timer; timer.start();
-    	calcDataCosts( imglist, orilist);
+	std::cout<<"\nAssigning costs to faces...";
+	PRSTimer timer; timer.start();
+	calcDataCosts( imglist, orilist);
 	calcDataCostPrior();
 	timer.stop();
 	std::cout<< " done." << timer.getTimeSec();
