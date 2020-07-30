@@ -273,7 +273,7 @@ void MeshRefine::process() {
           std::cout << "\n||> Semantic Optimization <||";
         }
 //        Eigen::Vector3d offset = Eigen::Vector3d::Zero(3);
-        MeshMRF meshmrf(_mesh, _mmd, 11);
+        MeshMRF meshmrf(_mesh, _mmd, 7);
         meshmrf.process(_imglistsem->getList(), _orilist->getList(), _ctr->_nummrfitervec[pyr]);
       }
       if (_verboselevel >= 0) {
@@ -387,13 +387,16 @@ void MeshRefine::process() {
       smoothgen.assignGrad(GradThinPlate::LaplacianMode::KOBBELT);
       if (_ctr->_usesemanticsmooth) {
         // roof -> 2 | facade -> 0 | ground -> 1 | veg -> 3
-        std::vector<float> penalties(4);
+        std::vector<float> penalties(7);
         // Set the penalties for level
-        penalties[0] = _ctr->_smoothfacadeweightvec[pyr];
-        penalties[1] = _ctr->_smoothgroundweightvec[pyr];
-        penalties[2] = _ctr->_smoothvegeweightvec[pyr];
-        penalties[3] = _ctr->_smoothroofweightvec[pyr];
-
+        penalties[0] = _ctr->_smoothroofweightvec[pyr]; //mobile
+        penalties[1] = _ctr->_smoothvegeweightvec[pyr]; // trees
+        penalties[2] = _ctr->_smoothgroundweightvec[pyr]; // ground
+        penalties[3] = _ctr->_smoothgroundweightvec[pyr]; // pavement
+        penalties[4] = _ctr->_smoothfacadeweightvec[pyr]; // building
+        penalties[5] = _ctr->_smoothwaterweightvec[pyr]; // water
+        penalties[6] = _ctr->_smoothwaterweightvec[pyr]; // shadow
+        // TODO: This is where penalties get set per class
         smoothgen.weightClassSpecificPenalties(penalties);
         tempgrad = smoothgen.getGrad() * (-1.0);
       } else {
