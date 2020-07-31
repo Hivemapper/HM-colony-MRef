@@ -216,9 +216,9 @@ int main(int argc, char* argv[]){
   // Read mesh meta data
   FDUtil::exchangeExtension(meshname,"mmd");
   MeshMetaData mmd(meshname);
+  //  *** Photometric and Semantic Consistency ***
 
-    //  *** Photometric and Semantic Consistency ***
-    // Boostrap full adjancy matrix
+  // Boostrap full adjancy matrix
   Eigen::MatrixXf adjacency(orilist.size(),orilist.size());
   adjacency<<   0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
       1,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -251,7 +251,6 @@ int main(int argc, char* argv[]){
   mesh.request_face_colors();
   mesh.request_vertex_colors();
   MeshConv::faceLabelToFaceColorICCV(mesh);
-  std::cout<<" consistency.cpp: line 261" << std::endl;
   MeshIO::writeMesh(mesh, outfilenames[0],true,true, false, false);
 //  void writeMesh( const MyMesh &mesh, const std::string &savename, const bool hasvertcolor ,const bool hasfacecolor,const bool hasvertnormal=false, const bool hasfacetexture=false );
   MeshIO::writeMesh(mesh, "data2/out/segmentation_mesh_n_asc_vert.ply",true,true, false, false);

@@ -204,7 +204,6 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 
 	// Set up the raytracer
 	_rtracer=new RayTracer(*_mesh);
-	std::cout<<" line 207 meshmrf " << std::endl;
 	// Skim images
 	int modelcount=0;
     	for( s=0; s<imglist.size(); s++)
@@ -212,18 +211,14 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 		std::cout<<"\nProcessing imgid ["<<s<<"]" << std::endl;
 		PRSTimer timer;
 		timer.start();
-		std::cout<<" line 215 meshmrf " << std::endl;
 		// Load the orientation
 	    	Orientation ori(orilist[s]);
-    std::cout<<" line 218 meshmrf " << std::endl;
 		// Bring the guy in local mesh coordinate system
 		Eigen::Vector3d C=ori.getC();
 		C(0)-=_mmd->_offsetx;
 		C(1)-=_mmd->_offsety;
 		C(2)-=_mmd->_offsetz;
-    std::cout<<" line 224 meshmrf " << std::endl;
 		ori.setC(C);
-    std::cout<<" line 226 meshmrf " << std::endl;
 
 		// This is update for Agi
 		//Eigen::Matrix3d R=ori.getR(); R(1,0)*=-1; R(1,1)*=-1;R(1,2)*=-1; R(2,0)*=-1; R(2,1)*=-1; R(2,2)*=-1;
@@ -239,20 +234,18 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 		}
 		else
 		{
-        std::cout<<" line 242 meshmrf " << std::endl;
 		    modelcount++;
 		}
 
-    std::cout<<" line 246 meshmrf " << std::endl;
 		// Load the image
 		LikelihoodImage* limage=new LikelihoodImage();
-    std::cout<<" line 249 meshmrf " << std::endl;
+		std::cout<<" s - imglist[s]: " << s << " - " << imglist[s] << std::endl;
 		limage->loadImage(imglist[s]);
-    std::cout<<" line 251 meshmrf " << std::endl;
+
 		int cols=limage->cols();
 		int rows=limage->rows();
 		_numlabels=limage->labels();
-		std::cout<<" line 255 meshmrf " << std::endl;
+
 		//Debugstuff
 		//cv::Mat out(rows,cols,CV_32F);
 		//limage->getLayer(0,out);
@@ -266,7 +259,6 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 	    		std::cout << rows <<"<->"<<ori.rows()<< " "<<cols <<"<->"<< ori.cols() << std::endl;
 	    		exit(1);
 	    	}
-		std::cout<<" line 261 meshmrf " << std::endl;
 		// Set the ray tracer
 		_rtracer->setView(TFAR, TNEAR, ori);
 
@@ -416,9 +408,7 @@ void MeshMRF::process(const std::vector< std::string> &imglist, const std::vecto
 	// Assign resulting face labels to graph
 	assignMinLabels();
 	delete _lbpgraph;
-	std::cout<<" line 426 meshmrf " << std::endl;
 	_lbpgraph=nullptr;
-	std::cout<<" line 428 meshmrf " << std::endl;
 
 }
 
