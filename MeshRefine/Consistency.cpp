@@ -149,7 +149,7 @@ void prepareOutput(const std::string basepath, const IOList& tilelist, const std
         std::string filename=basepath;
     filename.append("/out/");
     filename.append(tilelist.getNameWithoutEnding(tilenum[i]));
-    filename.append(".obj");
+    filename.append(".ply");
     outfilenames.push_back(filename);
   }
 }
@@ -250,10 +250,14 @@ int main(int argc, char* argv[]){
   std::cout<<"\nSaving..."<<outfilenames[0] << std::endl;
   mesh.request_face_colors();
   mesh.request_vertex_colors();
+  std::cout<<" Saving mesh vertex colors to file " << std::endl;
+  MeshIO::writeMesh(mesh, "data2/out/output_nofcolor.ply",true,false, false, false);
+  std::cout<<" Saving face labels to face colors " << std::endl;
   MeshConv::faceLabelToFaceColorICCV(mesh);
-  MeshIO::writeMesh(mesh, outfilenames[0],true,true, false, false);
 //  void writeMesh( const MyMesh &mesh, const std::string &savename, const bool hasvertcolor ,const bool hasfacecolor,const bool hasvertnormal=false, const bool hasfacetexture=false );
-  MeshIO::writeMesh(mesh, "data2/out/segmentation_mesh_n_asc_vert.ply",true,true, false, false);
+  std::cout<<" Saving mesh face colors to file " << std::endl;
+  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.ply",true,true, false, false);
+  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.obj",true,true, false, false);
   std::cout<<"..Done";
 
 
