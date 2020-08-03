@@ -237,10 +237,10 @@ void MeshRefine::process() {
   int numverts = _mesh->n_vertices();
   double avedgelength;
   double oldenergy = 0;
-  double energy = 0;
+  double energy;
   double pixsize;
   int nm;
-  int image_pairs = 0;
+  int image_pairs;
 
   std::vector <Orientation> orivec;
   computeAdaptedOrientation(orivec);
@@ -264,6 +264,7 @@ void MeshRefine::process() {
       itertimer.start();
       energy = 0;
       pixsize = 0.0;
+      image_pairs = 0;
       nm = 0;
       //  *** Do the Relabeling ***
       if ((_ctr->_usemrflabelsmoothing && iter % _ctr->_skipiterations == 0) ||
@@ -372,11 +373,11 @@ void MeshRefine::process() {
       std::cout << "\n\t energy/image_pairs: " << energy/image_pairs << std::endl;
 
       if (_verboselevel >= 0) {
-        std::cout << "\nEnergy=" << energy << " || Delta energy=" << energy - oldenergy << " || Av. face size="
+        std::cout << "\nEnergy=" << energy << " || Avg Delta energy=" << energy/image_pairs - oldenergy << " || Av. face size="
                   << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n";
       }
       image_pairs = 0;
-      oldenergy = energy;
+      oldenergy = energy/(double)image_pairs;
 
       scaleGradByCounter(grad, counter);
 
@@ -389,13 +390,13 @@ void MeshRefine::process() {
         // roof -> 2 | facade -> 0 | ground -> 1 | veg -> 3
         std::vector<float> penalties(7);
         // Set the penalties for level
-        penalties[0] = _ctr->_smoothroofweightvec[pyr]; //mobile
-        penalties[1] = _ctr->_smoothvegeweightvec[pyr]; // trees
-        penalties[2] = _ctr->_smoothgroundweightvec[pyr]; // ground
-        penalties[3] = _ctr->_smoothgroundweightvec[pyr]; // pavement
-        penalties[4] = _ctr->_smoothfacadeweightvec[pyr]; // building
-        penalties[5] = _ctr->_smoothwaterweightvec[pyr]; // water
-        penalties[6] = _ctr->_smoothwaterweightvec[pyr]; // shadow
+        penalties[0] = _ctr->_smoothwaterweightvec[pyr]; // unknown
+        penalties[1] = _ctr->_smoothroofweightvec[pyr]; //mobile
+        penalties[2] = _ctr->_smoothvegeweightvec[pyr]; // trees
+        penalties[3] = _ctr->_smoothgroundweightvec[pyr]; // ground
+        penalties[4] = _ctr->_smoothgroundweightvec[pyr]; // pavement
+        penalties[5] = _ctr->_smoothfacadeweightvec[pyr]; // building
+        penalties[6] = _ctr->_smoothwaterweightvec[pyr]; // water
         // TODO: This is where penalties get set per class
         smoothgen.weightClassSpecificPenalties(penalties);
         tempgrad = smoothgen.getGrad() * (-1.0);

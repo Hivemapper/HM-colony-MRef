@@ -74,20 +74,21 @@ float MeshMRF::dataPrior(int label, MyMesh::Normal normal)
 
 	//Facade, Ground, Veg, Roof, Wat
  	float diffangleup=fabs(acos(fabs(normal[2])-0.000001)/3.142*180.0); 
- 	if(label==0)
-	{
-	    if( fabs(diffangleup-90.0)>30.0) cost+=penalty;
+ 	if (label==5)
+	{   // facade --> building
+		  // TODO (MAC): This logic was originally for facades vs rooftops -- needs to be
+		  //   traced to see if the logic follows...I don't think we'd want to enforce 90deg angles
+	    if( (fabs(diffangleup-90.0)>30.0) || ( (fabs(diffangleup)>30.0) && (fabs(diffangleup)<60.0) )) 
+	    {
+	    	cost+=(0.5*penalty);
+	    }
 	}
- 	else if(label==1)
-	{
+ 	else if((label==3) || (label==4))
+	{   // ground --> ground natural+manmade
 	    if( fabs(diffangleup)>30.0) cost+=penalty;
 	}
- 	else if(label==3)
-	{
-	    if( fabs(diffangleup)>60.0) cost+=penalty;
-	}
- 	else if(label==4)
-	{
+ 	else if(label==6)
+	{   // water --> water
 	    if( fabs(diffangleup)>20.0) cost+=penalty;
 	}
 	return cost;
@@ -136,18 +137,16 @@ void MeshMRF::init(MyMesh* mesh)
 	int i,j;
 
 	// Allocate new struct
-    	_facelabelcosts.clear();
-    	_facelabelcosts.resize(_numfaces);
-	_facepriorcosts.clear();
-    	_facepriorcosts.resize(_numfaces);
-    	for( i=0; i<_numfaces; i++ )
-	{
+	_facelabelcosts.clear();
+	_facelabelcosts.resize(_numfaces);
+  _facepriorcosts.clear();
+	_facepriorcosts.resize(_numfaces);
+	for( i=0; i<_numfaces; i++ ) {
 		_facelabelcosts[i].resize(_numlabels);
 		_facepriorcosts[i].resize(_numlabels);
-		for(j=0; j<_numlabels; j++)
-		{
-		    _facelabelcosts[i][j]=0.0;
-		    _facepriorcosts[i][j]=0.0;
+		for(j=0; j<_numlabels; j++) {
+			_facelabelcosts[i][j]=0.0;
+			_facepriorcosts[i][j]=0.0;
 		}
 	}
 
@@ -366,10 +365,10 @@ void MeshMRF::fillGraph()
 
 void MeshMRF::assignMinLabels()
 {
-    	int f=0;
-	for (MyMesh::FaceIter f_it=_mesh->faces_begin(); f_it!=_mesh->faces_end(); ++f_it)
-	{
-	    _mesh->data(*f_it).setlabelid(_lbpgraph->what_label(f)); f++;
+  int f=0;
+	for (MyMesh::FaceIter f_it=_mesh->faces_begin(); f_it!=_mesh->faces_end(); ++f_it) {
+		_mesh->data(*f_it).setlabelid(_lbpgraph->what_label(f));
+		f++;
 	}
 }
 
