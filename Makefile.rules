@@ -14,7 +14,7 @@ BASELIBPATH :=  -L${LIBPATH}
 ifeq ($(MODE), debug)
 GG = -g
 endif
-CC = g++ -fPIC $(GG) -O3 -Wall -v -fopenmp -fvisibility=hidden -Lusr/local/lib -std=c++11
+CC = g++ -fPIC $(GG) -O3 -Wall -fopenmp -fvisibility=hidden -Lusr/local/lib -std=c++11
 
 ### OPENMESH
 OPENMESHINCPATH := -I/home/centos/thirdparty/OpenMesh-6.2/installs/include

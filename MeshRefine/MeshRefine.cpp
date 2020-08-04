@@ -60,6 +60,7 @@ void MeshRefine::downscale(cv::Mat &img, int level) {
 
 int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen::VectorXi &counter, MyMesh &mesh) {
   double gl;
+  double scale;
   double _MULTIPLICATOR = .5;
   double avel = avedgelength * _MULTIPLICATOR;
 
@@ -71,20 +72,26 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
 
   for (int y = 0; y < grad.rows(); y++) {
     // Gradient length
-    gl = sqrt(pow(grad(y, 0), 2.0) + pow(grad(y, 1), 2.0) + pow(grad(y, 2), 2.0));
-
+    double sgl = pow(grad(y, 0), 2.0) + pow(grad(y, 1), 2.0) + pow(grad(y, 2), 2.0);
+    if (sgl > 0) {
+      gl = sqrt(sgl);
+      scale = avel / gl;
+    } else {
+      gl = 0;
+      scale = 0;
+    }
     // Rubber out nan
-    if (std::isnan(grad(y, 0)) || std::isnan(grad(y, 1)) || std::isnan(grad(y, 2))) {
+    if ( !(std::isfinite(grad(y, 0))) || !(std::isfinite(grad(y, 1))) || !(std::isfinite(grad(y, 2)))) {
       grad(y, 0) = 0.0f;
       grad(y, 1) = 0.0f;
       grad(y, 2) = 0.0f;
       nancount++;
     }
       // Rubber out to long
-    else if (gl > avel) {
-      grad(y, 0) /= gl / avel;
-      grad(y, 1) /= gl / avel;
-      grad(y, 2) /= gl / avel;
+    else if ((gl > avel)) {
+      grad(y, 0) *= scale;
+      grad(y, 1) *= scale;
+      grad(y, 2) *= scale;
       sizecount++;
       counter(y)++;
     } else {
@@ -112,9 +119,13 @@ void MeshRefine::updateMesh(MyMesh &mesh, Eigen::MatrixXf &grad) {
   int idx = 0;
   for (MyMesh::VertexIter v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
     //	std::cout<<grad(idx,0);
-    mesh.point(*v_it)[0] += (grad(idx, 0));
-    mesh.point(*v_it)[1] += (grad(idx, 1));
-    mesh.point(*v_it)[2] += (grad(idx, 2));
+//    if (v_it > 139729)
+
+    if ((grad(idx, 0)) && (grad(idx, 1)) && (grad(idx, 2)) ){
+      mesh.point(*v_it)[0] += (grad(idx, 0));
+      mesh.point(*v_it)[1] += (grad(idx, 1));
+      mesh.point(*v_it)[2] += (grad(idx, 2));
+    }
     idx++;
   }
 }
@@ -123,9 +134,9 @@ void MeshRefine::scaleGradByCounter(Eigen::MatrixXf &grad, Eigen::VectorXi &coun
 
   for (int idx = 0; idx < grad.rows(); idx++) {
     if (counter(idx) > 0) {
-      grad(idx, 0) /= (float) counter(idx);
-      grad(idx, 1) /= (float) counter(idx);
-      grad(idx, 2) /= (float) counter(idx);
+      grad(idx, 0) /= static_cast<float>(counter(idx));
+      grad(idx, 1) /= static_cast<float>(counter(idx));
+      grad(idx, 2) /= static_cast<float>(counter(idx));
     }
   }
 }
@@ -146,7 +157,6 @@ double MeshRefine::photoConsistency() {
 
   computeAdaptedOrientation(orivec);
   // Iterate over all images
-//	for (int i = 0; i < 10; i++) {
   for (int i = 0; i < _adjacency->rows(); i++) {
     // Check if image is a master
 //    if ((*_adjacency)(i, i) > -1.0) {
@@ -376,8 +386,8 @@ void MeshRefine::process() {
         std::cout << "\nEnergy=" << energy << " || Avg Delta energy=" << energy/image_pairs - oldenergy << " || Av. face size="
                   << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n";
       }
+      oldenergy = energy/image_pairs;
       image_pairs = 0;
-      oldenergy = energy/(double)image_pairs;
 
       scaleGradByCounter(grad, counter);
 
