@@ -210,7 +210,20 @@ int main(int argc, char* argv[]){
 
   MyMesh mesh; // mesh with original vertices
   std::string meshname(meshlist.getElement(0));
-  MeshIO::readMesh(mesh, meshname, true, false);
+  MeshIO::readMesh(mesh, meshname, true, false, false, false, true);
+
+  mesh.request_face_colors();
+  mesh.request_vertex_colors();
+
+  // takes the 4th channel of colors and turns it into the classification value
+  MeshConv::vertexAlphaToVertexLabel(mesh);
+  // sets face classification to the first vertex class
+  MeshConv::vertexLabelToFaceLabel(mesh);
+  // just to check color IO
+    MeshConv::vertexLabelToVertexColorICCV(mesh);
+   MeshConv::faceLabelToFaceColorICCV(mesh);
+
+  std::cout<<" Saving mesh face colors to file " << std::endl;
   int numverts = mesh.n_vertices();
 
   // Read mesh meta data
@@ -254,10 +267,10 @@ int main(int argc, char* argv[]){
   MeshIO::writeMesh(mesh, "data2/out/output_nofcolor.ply",true,false, false, false);
   std::cout<<" Saving face labels to face colors " << std::endl;
   MeshConv::faceLabelToFaceColorICCV(mesh);
-//  void writeMesh( const MyMesh &mesh, const std::string &savename, const bool hasvertcolor ,const bool hasfacecolor,const bool hasvertnormal=false, const bool hasfacetexture=false );
   std::cout<<" Saving mesh face colors to file " << std::endl;
-  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.ply",true,true, false, false);
-  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.obj",true,true, false, false);
+  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.ply",true,false, true, false);
+  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.obj",true,true, true, false);
+
   std::cout<<"..Done";
 
 
