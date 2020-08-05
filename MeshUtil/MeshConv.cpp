@@ -127,6 +127,7 @@ void vertexLabelToFaceLabel(MyMesh &mesh)
   		vertexclass = mesh.data(*fv_it).classification();
   		break;
   	}
+  	mesh.data(*f_it).setlabelid(static_cast<short>(vertexclass));
   }
 }
 
