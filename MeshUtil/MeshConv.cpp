@@ -40,7 +40,7 @@ void openMeshToVectors( const MyMesh &ommesh, std::vector<std::vector<float> > &
 			v++;
 	   	}
 		labels[facecount]=ommesh.data(*f_it).labelid();
-    		facecount++;
+    facecount++;
 	}
 }
 
@@ -114,7 +114,28 @@ void vertexAlphaToVertexLabel(MyMesh &mesh)
 	}
 }
 
+void vertexRGBToVertexGreyLabel(MyMesh &mesh)
+{
+  unsigned char r, g, b, al;
+  int s;
+  float rgbavg;
+	// unsigned short s;
 
+  for(MyMesh::VertexIter v_it=mesh.vertices_begin(); v_it!=mesh.vertices_end(); ++v_it)
+	{
+		const MyMesh::Color& c=mesh.color(*v_it);
+		r=c[0];
+		g=c[1];
+		b=c[2];
+		al=c[3];
+		rgbavg = static_cast<float>(r+g+b)/3.0;
+
+		s = static_cast<int>( rgbavg*6.0/255.0 );
+		mesh.data(*v_it).setclassification(s);
+    mesh.set_color(*v_it, MyMesh::Color(r,g,b,al));
+    
+	}
+}
 
 void vertexLabelToFaceLabel(MyMesh &mesh)
 {
@@ -129,21 +150,6 @@ void vertexLabelToFaceLabel(MyMesh &mesh)
   	}
   	mesh.data(*f_it).setlabelid(static_cast<short>(vertexclass));
   }
-}
-
-void faceLabelToFaceColor(MyMesh &mesh)
-{
-
-    	unsigned char first, second;
-	unsigned short s;
-
-    	for (MyMesh::FaceIter f_it=mesh.faces_begin(); f_it!=mesh.faces_end(); ++f_it)
-	{
-		s=mesh.data(*f_it).labelid();
-		first= s >> 8;
-		second = s & 0x00ff;
-		mesh.set_color(*f_it, MyMesh::Color(first,second,first+second, 0));
-	}
 }
 
 void vertexLabelToVertexColorICCV(MyMesh &mesh)
