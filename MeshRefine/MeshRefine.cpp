@@ -270,6 +270,9 @@ void MeshRefine::process() {
   // Hirarchical loop
   for (int pyr = _ctr->_startlevel; pyr >= _ctr->_endlevel; pyr--) {
     avedgelength = avEdgeLength(*_mesh);
+    if (_verboselevel >= 1) {
+      std::cout << "avg. mesh edge length: " << avedgelength << std::endl;
+    }
 
     Eigen::MatrixXf grad(numverts, 3);
     Eigen::VectorXi counter(numverts);
@@ -293,9 +296,10 @@ void MeshRefine::process() {
           (_ctr->_usesemanticsmooth && iter == 0) ||
           (_ctr->_usestraightedgegrad && iter == 0)) {
         if (_verboselevel >= 0) {
-          std::cout << "\n||> Semantic Optimization <||";
+          std::cout << "\n||> Semantic Optimization <||" << std::endl;
         }
-//        Eigen::Vector3d offset = Eigen::Vector3d::Zero(3);
+        // TODO (MAC) Number of labels is hard-coded here -- this, and the
+        //  likelihood class -- should be watched for specific row/column/label sizes
         MeshMRF meshmrf(_mesh, _mmd, 7);
         meshmrf.process(_imglistsem->getList(), _orilist->getList(), _ctr->_nummrfitervec[pyr]);
       }
