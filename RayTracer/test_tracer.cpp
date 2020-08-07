@@ -10,30 +10,30 @@
 
 #include <iostream>
 
-int check( const Eigen::Matrix3f &R, const Eigen::Matrix3f &K, const Eigen::Vector3f &C, int rows, int cols, MyMesh &mesh)
+int check( const Eigen::Matrix3d &R, const Eigen::Matrix3d &K, const Eigen::Vector3d &C, int rows, int cols, MyMesh &mesh)
 {
 
 	int badcount = 0;
 	int goodcount = 0;
 	// Build Pmat 
-	Eigen::MatrixXf P(3,4);
-	Eigen::Matrix3f KR(3,3);
+	Eigen::MatrixXd P(3,4);
+	Eigen::Matrix3d KR(3,3);
 	KR=K*R;
 
-	std::cout<<"\nK "<<K;
-	std::cout<<"\nR "<<R;
-	std::cout<<"\nKR "<<KR;
+	std::cout<<"K: "<<K<< std::endl;
+	std::cout<<"R: "<<R<< std::endl;
+	std::cout<<"KR: "<<KR<< std::endl;
 
-	Eigen::Vector3f t(3,1);
-	Eigen::Vector4f X(4,1);
-	Eigen::Vector3f x(3,1);
+	Eigen::Vector3d t(3,1);
+	Eigen::Vector4d X(4,1);
+	Eigen::Vector3d x(3,1);
 	t=(-1.0)*K*R*C;
 
-	std::cout<<"\nt "<<t;
+	std::cout<<"t: "<<t<< std::endl;
 	P.row(0)<<KR(0,0),KR(0,1),KR(0,2),t(0);
 	P.row(1)<<KR(1,0),KR(1,1),KR(1,2),t(1);
 	P.row(2)<<KR(2,0),KR(2,1),KR(2,2),t(2);
-	std::cout<<"\nP "<<P;
+	std::cout<<"P: "<<P<< std::endl;
 	for (MyMesh::VertexIter v_it=mesh.vertices_begin(); v_it!=mesh.vertices_end(); ++v_it)
 	{
 
@@ -47,6 +47,7 @@ int check( const Eigen::Matrix3f &R, const Eigen::Matrix3f &K, const Eigen::Vect
 			badcount++;
 		}
 	}
+	std::cout << "goodcount: " << goodcount << "\tbadcount: " << badcount << std::endl;
 return badcount;
 }
 
@@ -80,9 +81,7 @@ int main()
 	Eigen::Matrix3d K(3,3);
 	K<< 1920.00000000, 0.00000000, 876.12031494, 0.00000000, 1080.00000000, 520.69784667, 0.00000000, 0.00000000, 1.00000000;
 	Eigen::Vector3d C(3,1);
-	C<< 91.0421370673, -104.4187912000, 119.4204260372;
-
-	// Offset
+	C<< 89.695040476741269, -103.84232057545159, 95.145437410101295;
 	Eigen::Vector3d O(3,1);
 	O << 0, 0, 0.0;
 	O << 0, 0, 0.0;
@@ -97,8 +96,10 @@ int main()
 	MyMesh mesh;
   MeshIO::readMesh( mesh, loadname, true, false);
 	mesh.request_vertex_colors();
+	// takes the 4th channel of colors and turns it into the classification value
 //	MeshConv::vertexAlphaToVertexLabel(mesh);
 	MeshConv::vertexRGBToVertexGreyLabel(mesh);
+	// sets face classification to the first vertex class
 	MeshConv::vertexLabelToFaceLabel(mesh);
 
     	std::vector<std::vector<float> > verts;
@@ -108,9 +109,10 @@ int main()
 
 	// Render 
 	 RayTracer mytracer( verts, faces);
-	 mytracer.setView(1000.0,1.0,rows,cols,R,K,C);
+	 mytracer.setView(1920.0,1.0,rows,cols,R,K,C);
 	 mytracer.traceRaysColumnWise();
 
+	 int intcheck = check(R,K,C,rows,cols,mesh);
 	// Get the images
 	cv::Mat idimg=mytracer.getIdImage();
 	cv::Mat idvisimg(idimg.rows, idimg.cols, CV_8UC1);
