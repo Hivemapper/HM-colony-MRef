@@ -74,8 +74,8 @@ namespace MeshIO {
       OpenMesh::IO::_PLYReader_();
       //  TODO: this needs to be a check, but for now my ply file is ascii, so read it as such
       //  ropt+=OpenMesh::IO::Options::Binary;
-      std::cerr << "Error loading ply mesh from file " << savename << std::endl;
       if (!OpenMesh::IO::read_mesh(ommesh, savename.c_str(), ropt)) {
+        std::cerr << "Error loading ply mesh from file " << savename << std::endl;
       }
     }
   }
