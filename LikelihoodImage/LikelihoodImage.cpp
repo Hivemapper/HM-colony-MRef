@@ -199,16 +199,16 @@ void LikelihoodImage::loadImage(const std::string &name)
 	_rows=1080;
 	_cols=1920;
 	_labels=7;
-	int label_offset = 3; // to compensate for first 3 RGB values
-	// note that the last class (11th) is "shadow" and is ignored
+	int label_offset = 3; // to compensate for last 3 RGB values
+	// note that the last class (8th) is "shadow" and is also ignored
 
 	allocateImage(_rows,_cols,_labels);
 	for(int y=0; y<_rows; y++) {
 		for(int x=0; x<_cols; x++) {
-			for(int l=0; l<_labels+label_offset; l++) {
-				//skip l=[0:2] RGB values, and skip l=10 11th shadow class
-			  if ((l >= label_offset) && (l <=_labels+label_offset) ) {
-          _data[y][x][l-label_offset]=static_cast<float>(*ptr)/255.0;
+			for(int l=0; l<=_labels+label_offset; l++) {
+				// skip l=7 shadow class and l=[8:10] RGB values
+			  if  (l < _labels) {
+          _data[y][x][l]=static_cast<float>(*ptr)/255.0;
 			  }
 				ptr++;
 			}
