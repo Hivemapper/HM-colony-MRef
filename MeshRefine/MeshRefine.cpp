@@ -69,6 +69,7 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
   int count = 0;
   int nancount = 0;
   int sizecount = 0;
+  int newnancount = 0;
 
   for (int y = 0; y < grad.rows(); y++) {
     // Gradient length
