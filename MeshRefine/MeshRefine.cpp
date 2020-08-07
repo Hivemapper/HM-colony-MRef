@@ -82,7 +82,7 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
       scale = 0;
     }
     // Rubber out nan
-    if ( !(std::isfinite(grad(y, 0))) || !(std::isfinite(grad(y, 1))) || !(std::isfinite(grad(y, 2)))) {
+    if (!(std::isfinite(grad(y, 0))) || !(std::isfinite(grad(y, 1))) || !(std::isfinite(grad(y, 2)))) {
       grad(y, 0) = 0.0f;
       grad(y, 1) = 0.0f;
       grad(y, 2) = 0.0f;
@@ -107,10 +107,11 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
   }
 
   for (int y = 0; y < grad.rows(); y++) {
-    if ( !(std::isfinite(grad(y, 0))) || !(std::isfinite(grad(y, 1))) || !(std::isfinite(grad(y, 2)))) {
+    if (!(std::isfinite(grad(y, 0))) || !(std::isfinite(grad(y, 1))) || !(std::isfinite(grad(y, 2)))) {
       std::cout << "MeshRefine: Another Nan in grad! This is bad; What's going on?\n y= " << y << std::endl;
-      std::cout << "y: " << y <<"\t "<<grad(y, 0)<<"\t "<<grad(y, 1)<<"\t "<<grad(y, 2)<<"\t "<< std::endl;
-      std::cout << "avel: " << avel <<"\t gl: " << gl << std::endl;
+      std::cout << "y: " << y << "\t " << grad(y, 0) << "\t " << grad(y, 1) << "\t " << grad(y, 2) << "\t "
+                << std::endl;
+      std::cout << "avel: " << avel << "\t gl: " << gl << std::endl;
       exit(1);
     }
   }
@@ -133,7 +134,7 @@ void MeshRefine::updateMesh(MyMesh &mesh, Eigen::MatrixXf &grad) {
     //	std::cout<<grad(idx,0);
 //    if (v_it > 139729)
 
-    if ((grad(idx, 0)) && (grad(idx, 1)) && (grad(idx, 2)) ){
+    if ((grad(idx, 0)) && (grad(idx, 1)) && (grad(idx, 2))) {
       mesh.point(*v_it)[0] += (grad(idx, 0));
       mesh.point(*v_it)[1] += (grad(idx, 1));
       mesh.point(*v_it)[2] += (grad(idx, 2));
@@ -172,86 +173,86 @@ double MeshRefine::photoConsistency() {
   for (int i = 0; i < _adjacency->rows(); i++) {
     // Check if image is a master
 //    if ((*_adjacency)(i, i) > -1.0) {
-      // if(_verboselevel>=1) { std::cout <<"\nProcessing baseimage "<<i; }
-      // Load base image stuff
-      Orientation ori0 = orivec[i];
-      // ori0.downscalePyr(pyr); PYR is pyramid level, we will just perform everything at full resolution (pyr=0) - MRC
-      timer.start();
-      // Read image from image list in greyscale - MRC
-      auto img0 = cv::imread(_imglistphoto->getElement(i), cv::IMREAD_GRAYSCALE);
-      // downscale(img0, pyr); No downscaling - MRC
-      if (img0.cols == 0 || img0.rows == 0) {
-        std::cout << "Problems Reading Image"<< std::endl;
-        exit(1);
-      }
-      if (img0.type() != CV_8UC1) { img0.convertTo(img0, CV_8UC1); }
-      timer.stop();
+    // if(_verboselevel>=1) { std::cout <<"\nProcessing baseimage "<<i; }
+    // Load base image stuff
+    Orientation ori0 = orivec[i];
+    // ori0.downscalePyr(pyr); PYR is pyramid level, we will just perform everything at full resolution (pyr=0) - MRC
+    timer.start();
+    // Read image from image list in greyscale - MRC
+    auto img0 = cv::imread(_imglistphoto->getElement(i), cv::IMREAD_GRAYSCALE);
+    // downscale(img0, pyr); No downscaling - MRC
+    if (img0.cols == 0 || img0.rows == 0) {
+      std::cout << "Problems Reading Image" << std::endl;
+      exit(1);
+    }
+    if (img0.type() != CV_8UC1) { img0.convertTo(img0, CV_8UC1); }
+    timer.stop();
 //      LikelihoodImage limg0;
-      // Let's not deal with semantic stuff for now... - MRC
+    // Let's not deal with semantic stuff for now... - MRC
 
-      // if(_ctr->_usesemanticdata){
-      //     limg0.loadImage(_imglistsem->getElement(i));
-      //     limg0.downscale(pyr);
-      // }
+    // if(_ctr->_usesemanticdata){
+    //     limg0.loadImage(_imglistsem->getElement(i));
+    //     limg0.downscale(pyr);
+    // }
 
-      // GradCalcStereo gradcomp(img0, &limg0, &ori0, _mesh,
-      //                         _ctr->_usesemanticdata ? GradCalcStereo::SEMANTICMODE::ON : GradCalcStereo::SEMANTICMODE::OFF,
-      //                         _ctr->_tnear, _ctr->_tfar, _ctr->_verboselevel);
-      GradCalcStereo gradcomp(img0, &limg0, &ori0, _mesh, GradCalcStereo::SEMANTICMODE::OFF,
-                              _ctr->_tnear, _ctr->_tfar, _ctr->_verboselevel);
-      for (int j = 0; j < _adjacency->cols(); j++) {
-        // avoid reference image
-        if ((*_adjacency)(i, j) > 0.0 && j != i) {
-          image_pairs += 1;
-          // if(_verboselevel>=1) { std::cout <<"\nProcessing match image "<<j;}
-          // Load slave img stuff
-          timer2.start();
-          Orientation ori1 = orivec[j];
-          // ori1.downscalePyr(pyr); No downscaling - MRC
-          auto img1 = cv::imread(_imglistphoto->getElement(j), cv::IMREAD_GRAYSCALE);
-          //downscale(img1,pyr); No dowscaling - MRC
-          if (img1.type() != CV_8UC1) {
-          	img1.convertTo(img1, CV_8UC1, 255);
-          }
+    // GradCalcStereo gradcomp(img0, &limg0, &ori0, _mesh,
+    //                         _ctr->_usesemanticdata ? GradCalcStereo::SEMANTICMODE::ON : GradCalcStereo::SEMANTICMODE::OFF,
+    //                         _ctr->_tnear, _ctr->_tfar, _ctr->_verboselevel);
+    GradCalcStereo gradcomp(img0, &limg0, &ori0, _mesh, GradCalcStereo::SEMANTICMODE::OFF,
+                            _ctr->_tnear, _ctr->_tfar, _ctr->_verboselevel);
+    for (int j = 0; j < _adjacency->cols(); j++) {
+      // avoid reference image
+      if ((*_adjacency)(i, j) > 0.0 && j != i) {
+        image_pairs += 1;
+        // if(_verboselevel>=1) { std::cout <<"\nProcessing match image "<<j;}
+        // Load slave img stuff
+        timer2.start();
+        Orientation ori1 = orivec[j];
+        // ori1.downscalePyr(pyr); No downscaling - MRC
+        auto img1 = cv::imread(_imglistphoto->getElement(j), cv::IMREAD_GRAYSCALE);
+        //downscale(img1,pyr); No dowscaling - MRC
+        if (img1.type() != CV_8UC1) {
+          img1.convertTo(img1, CV_8UC1, 255);
+        }
 //          LikelihoodImage limg1;
 
-          // if(_ctr->_usesemanticdata)
-          // {
-          //     limg1.loadImage(_imglistsem->getElement(j));
-          //     limg1.downscale(pyr);
-          // }
-          timer2.stop();
+        // if(_ctr->_usesemanticdata)
+        // {
+        //     limg1.loadImage(_imglistsem->getElement(j));
+        //     limg1.downscale(pyr);
+        // }
+        timer2.stop();
 
-          // Set the second view...
-          gradcomp.setSecondView(img1, &limg1, &ori1);
+        // Set the second view...
+        gradcomp.setSecondView(img1, &limg1, &ori1);
 
-          // This should compute Photometric consistency
-          // and if available Semantic data terms
-          auto img_energy = gradcomp.process();
-          energy = energy + img_energy;
-          std::cout << "IMG " << i << " " << j << " img_energy: " << img_energy;
-          std::cout << " \t Energy: " << energy << std::endl;
-          // pixsize += gradcomp.computeTriangleSizeInPix();
+        // This should compute Photometric consistency
+        // and if available Semantic data terms
+        auto img_energy = gradcomp.process();
+        energy = energy + img_energy;
+        std::cout << "IMG " << i << " " << j << " img_energy: " << img_energy;
+        std::cout << " \t Energy: " << energy << std::endl;
+        // pixsize += gradcomp.computeTriangleSizeInPix();
 
-          // // Actually here base should be scaled
+        // // Actually here base should be scaled
 
-          // // Get the gradient, rubber nan and a
-          // tempgrad = gradcomp.getPhotoGrad()*_ctr->_photoweightvec[pyr]*pow(gradcomp.getMeanDist(),2.0)/pow((ori1.getK())(0,0),2.0);
+        // // Get the gradient, rubber nan and a
+        // tempgrad = gradcomp.getPhotoGrad()*_ctr->_photoweightvec[pyr]*pow(gradcomp.getMeanDist(),2.0)/pow((ori1.getK())(0,0),2.0);
 
-          // cleanGrad(avedgelength,tempgrad,counter,*_mesh);
-          // grad += tempgrad;
+        // cleanGrad(avedgelength,tempgrad,counter,*_mesh);
+        // grad += tempgrad;
 
-          // // Get the gradient, rubber nan and a
-          // tempgrad = gradcomp.getSemanticGrad()*_ctr->_semweightvec[pyr];
-          // cleanGrad(avedgelength,tempgrad,counter,*_mesh);
-          // grad += tempgrad;
-          // nm++;
-        }
+        // // Get the gradient, rubber nan and a
+        // tempgrad = gradcomp.getSemanticGrad()*_ctr->_semweightvec[pyr];
+        // cleanGrad(avedgelength,tempgrad,counter,*_mesh);
+        // grad += tempgrad;
+        // nm++;
       }
+    }
 //    }
   }
   std::cout << "\t num image_pairs: " << image_pairs << std::endl;
-  return energy/image_pairs;
+  return energy / image_pairs;
 }
 
 // Main procesing function
@@ -309,7 +310,7 @@ void MeshRefine::process() {
       //  *** Photometric and Semantic Consistency ***
       // Iterate over all images
       if (_verboselevel >= 0) {
-        std::cout<<"Level: "<<pyr<<"\tIteration: "<<(iter+1)<<" / "<< _ctr->_numitervec[pyr]<< std::endl;;
+        std::cout << "Level: " << pyr << "\tIteration: " << (iter + 1) << " / " << _ctr->_numitervec[pyr] << std::endl;;
       }
       for (int i = 0; i < _adjacency->rows(); i++) {
         // Check if image is a master
@@ -400,13 +401,14 @@ void MeshRefine::process() {
         }
       }
       std::cout << "\n\t num image_pairs: " << image_pairs << std::endl;
-      std::cout << "\t energy/image_pairs: " << energy/image_pairs << std::endl;
+      std::cout << "\t energy/image_pairs: " << energy / image_pairs << std::endl;
 
       if (_verboselevel >= 0) {
-        std::cout << "Energy=" << energy << " || Avg Delta energy=" << energy/image_pairs - oldenergy << " || Av. face size="
+        std::cout << "Energy=" << energy << " || Avg Delta energy=" << energy / image_pairs - oldenergy
+                  << " || Av. face size="
                   << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n" << std::endl;
       }
-      oldenergy = energy/image_pairs;
+      oldenergy = energy / image_pairs;
       image_pairs = 0;
 
       scaleGradByCounter(grad, counter);
