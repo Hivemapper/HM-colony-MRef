@@ -184,7 +184,6 @@ void LikelihoodImage::loadImage(const std::string &name)
 	 }
 
 	 size_t count = lSize/sizeof(uint8_t);
-	std::cout<< "count: " << count << std::endl;
 
 	 // copy the file into the buffer:
 	 result = fread (buffer, sizeof(uint8_t), count, pFile);
@@ -205,9 +204,10 @@ void LikelihoodImage::loadImage(const std::string &name)
 	allocateImage(_rows,_cols,_labels);
 	for(int y=0; y<_rows; y++) {
 		for(int x=0; x<_cols; x++) {
-			for(int l=0; l<=_labels+label_offset; l++) {
-				// skip l=7 shadow class and l=[8:10] RGB values
+			for(int l=0; l<_labels+label_offset+1; l++) {
+				// skip l=7 shadow class (+1) and l=[8:10] RGB values (+offset)
 			  if  (l < _labels) {
+			  	// value needs to be between 0 and 1, so scale by 255
           _data[y][x][l]=static_cast<float>(*ptr)/255.0;
 			  }
 				ptr++;
