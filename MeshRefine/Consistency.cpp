@@ -174,9 +174,9 @@ void prepareOutput(const std::string basepath, const IOList &tilelist,
 void printSummary(const std::vector<int> &tilestoprocess, const std::vector <std::string> &outfilenames,
                   const IOList &tilelist) {
   for (int t = 0; t < tilestoprocess.size(); t++) {
-    std::cout << "\n\n Processing tile: " << tilestoprocess[t] << " tile"
-              << tilelist.getNameWithoutEnding(tilestoprocess[t]);
-    std::cout << "\n Savename is: " << outfilenames[t] << "\n\n";
+    std::cout << "\n Processing tile: " << tilestoprocess[t] << " tile"
+              << tilelist.getNameWithoutEnding(tilestoprocess[t]) << std::endl;
+    std::cout << " Savename is: " << outfilenames[t] << "\n" << std::endl;
   }
 }
 
