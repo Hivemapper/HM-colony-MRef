@@ -248,6 +248,21 @@ int main(int argc, char *argv[]) {
   std::cout << " Saving input mesh face colors to file " << std::endl;
   MeshIO::writeMesh(mesh, infilenames[pyr_id], true, true, true, false);
 
+//  int mac = 0;
+//  for (MyMesh::VertexIter v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
+//    int vertexclass = mesh.data(*v_it).classification();
+//    std::cout << "vertexclass " << vertexclass << " faceclass: (";
+//    for (MyMesh::VertexFaceIter vf_it = mesh.vf_iter(*v_it); vf_it.is_valid(); ++vf_it) {
+//      short faceclass = mesh.data(*vf_it).labelid();
+//      std::cout << " " << faceclass;
+//    }
+//    std::cout << " )" << std::endl;
+//    if (mac > 5) {
+//      std::cout << " " << std::endl;
+//      break;
+//    }
+//    mac++;
+//  }
 
   int numverts = mesh.n_vertices();
 
@@ -290,16 +305,25 @@ int main(int argc, char *argv[]) {
   mesh.request_vertex_colors();
   std::cout << " Saving face labels to face colors " << std::endl;
   MeshConv::faceLabelToFaceColorICCV(mesh);
-
-
-
-
   std::cout << " Saving mesh face colors to file " << std::endl;
   MeshIO::writeMesh(mesh, outfilenames[pyr_id], true, true, true, false);
 
+//  mac = 0;
+//  for (MyMesh::VertexIter v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
+//    int vertexclass = mesh.data(*v_it).classification();
+//    std::cout << "vertexclass " << vertexclass << " faceclass: (";
+//    for (MyMesh::VertexFaceIter vf_it = mesh.vf_iter(*v_it); vf_it.is_valid(); ++vf_it) {
+//      short faceclass = mesh.data(*vf_it).labelid();
+//      std::cout << " " << faceclass;
+//    }
+//    std::cout << " )" << std::endl;
+//    if (mac > 5) {
+//      std::cout << " " << std::endl;
+//      break;
+//    }
+//    mac++;
+//  }
+
   std::cout << "..Done";
-
-
   return 0;
-
 }

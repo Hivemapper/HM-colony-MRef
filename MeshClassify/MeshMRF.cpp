@@ -328,6 +328,10 @@ void MeshMRF::fillGraph() {
       _pairwisecostmap[m][i].first = n;
 
       float paircost = pairwiseCost(f_it, ff_it);
+//			if (m<10) {
+//				std::cout << "paircost: "<< paircost;
+//				std::cout << "(" << m <<","<< n <<" :"<<i<<"): "<<paircost<<" _ "<<paircost/3.142*180.0<<"\t";
+//			}
       _pairwisecostmap[m][i++].second = paircost;
       _lbpgraph->set_neighbors_single(m, n++); // Be careful... this sets both directions between graph ...
     }
