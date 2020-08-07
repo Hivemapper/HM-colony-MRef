@@ -422,13 +422,13 @@ void MeshRefine::process() {
         // roof -> 2 | facade -> 0 | ground -> 1 | veg -> 3
         std::vector<float> penalties(7);
         // Set the penalties for level
-        penalties[0] = _ctr->_smoothwaterweightvec[pyr]; // unknown
-        penalties[1] = _ctr->_smoothroofweightvec[pyr]; //mobile
-        penalties[2] = _ctr->_smoothvegeweightvec[pyr]; // trees
-        penalties[3] = _ctr->_smoothgroundweightvec[pyr]; // ground
-        penalties[4] = _ctr->_smoothgroundweightvec[pyr]; // pavement
-        penalties[5] = _ctr->_smoothfacadeweightvec[pyr]; // building
-        penalties[6] = _ctr->_smoothwaterweightvec[pyr]; // water
+        penalties[0] = _ctr->_smoothweightvecunknown[pyr]; // unknown
+        penalties[1] = _ctr->_smoothweightvecmobile[pyr]; //mobile
+        penalties[2] = _ctr->_smoothweightvectrees[pyr]; // trees
+        penalties[3] = _ctr->_smoothweightvecground[pyr]; // ground
+        penalties[4] = _ctr->_smoothweightvecpavement[pyr]; // pavement
+        penalties[5] = _ctr->_smoothweightvecbuilding[pyr]; // building
+        penalties[6] = _ctr->_smoothweightvecwater[pyr]; // water
         // TODO: This is where penalties get set per class
         smoothgen.weightClassSpecificPenalties(penalties);
         tempgrad = smoothgen.getGrad() * (-1.0);
