@@ -1,10 +1,11 @@
 import json
 from itertools import chain
 
-camera_file   = "data/camera_data_tf.json"
-data_folder   = 'data/'
+data_folder   = 'data2/'
+camera_file   = data_folder+"camera_data_tf_2.json"
 ori_folder    = "ori/"
-output_folder = 'data/'+ori_folder
+img_folder    = "img/"
+output_folder = data_folder+ori_folder
 
 # Reading the json as a dict
 with open(camera_file) as json_data:
@@ -15,26 +16,28 @@ fl = intrinsics['focal_length']
 width = intrinsics['width']
 height = intrinsics['height']
 pp = intrinsics['principal_point']
+sx, sy, sa = intrinsics['disto_k3']
 
 ox, oy = pp[0], pp[1]
-fsx = width
-fsy = height
+fsx = fl
+fsy = fl
 rc = [height, width]
 s = 0
 
 extrinsics = data['extrinsics']   
 orilist = open(data_folder+"orilist.txt", "w")
+imglist = open(data_folder+"imglist.txt", "w")
 
 for entry in extrinsics:
-  i =  entry['key']
+  i =  entry['key'] + 1 # increment to account for 0-indexing of mvg outpt to 1-indexing of images
   c =  entry['value']['center']
   r =  entry['value']['rotation']
   r =  list(chain.from_iterable(r))
   k = [fsx,   s, ox, 
          0, fsy, oy, 
          0,   0,  1]
-  outfile = output_folder+"{0}.or".format(i+1)
-  l1 = "$id {0:03}".format(i)
+  outfile = output_folder+"{0}.or".format(i)
+  l1 = "$id {0:3}".format(i)
   l2 = "\n$rc{0:19}{1:19}".format(rc[0],rc[1])
   l3 = "\n$R"
   for ir in r:
@@ -49,8 +52,10 @@ for entry in extrinsics:
   for wline in [l1,l2,l3,l4,l5]:
     f.write(wline)
   f.close()
-  orilist.write(ori_folder + "{0}.or\n".format(i+1))
+  orilist.write(ori_folder + "{0}.or\n".format(i))
+  imglist.write(img_folder + "{0}.png\n".format(i))
 orilist.close()
+imglist.close()
 
 ##  Example: firstori.or
 # $id none
