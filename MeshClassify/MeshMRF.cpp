@@ -45,7 +45,10 @@ float MeshMRF::pairwiseCost(MyMesh::FaceIter &f_it, MyMesh::FaceFaceIter &ff_it)
     MyMesh::Normal n1=_mesh->normal(*f_it);
     MyMesh::Normal n2=_mesh->normal(*ff_it);
 
-    float angle=fabs(acos(fabs(n1[0]*n2[0]+n1[1]*n2[1]+n1[2]*n2[2])-0.000001))/3.142*180.0;
+    // TODO (MAC) I don't think shis should be so large -- it returns ~O(10s)
+    // but without the final 3.14/180 it's in the ~0.3 range
+//	  float angle=fabs(acos(fabs(n1[0]*n2[0]+n1[1]*n2[1]+n1[2]*n2[2])-0.000001));
+    	  float angle=fabs(acos(fabs(n1[0]*n2[0]+n1[1]*n2[1]+n1[2]*n2[2])-0.000001))/3.142*180.0;
    // if(angle!=angle)std::cout<<"\n"<<angle<<" n1= " <<n1[0]<<" "<<n1[1]<<" "<<n2[2]<<" n2="<<n2[0]<<" "<<n2[1]<<" "<<n2[2]<< "res="<<n1[0]*n2[0]+n1[1]*n2[1]+n1[2]*n2[2];
     return angle;
 
@@ -188,7 +191,9 @@ bool MeshMRF::hitsModel(Orientation &ori)
 	x=P*_bb7; x/=x(2); if( ( ceil(x(0))<cols-1 && floor(x(0))>0)  &&  ( ceil(x(1))<rows-1 && floor(x(1))>0) ) { return true; }
 	x=P*_bb8; x/=x(2); if( ( ceil(x(0))<cols-1 &&  floor(x(0))>0)  &&  ( ceil(x(1))<rows-1 &&  floor(x(1))>0) ) { return true; }
 
-	return false;
+	// TODO: (MAC) forcing this true
+	std::cout << "MeshMRF:192 -- Forcing image to return within bounding box" << std::endl;
+	return true;
 }
 
 // Get this parallel
@@ -321,7 +326,7 @@ void MeshMRF::fillGraph()
 
 	_mesh->request_face_normals();
 	_mesh->update_normals();
-    	int n,i;
+    	int n;
 
 	// Set edges of graph Skiming face ... ids are linear!!! at least if nothing is inserted
 	int m=0;
@@ -347,11 +352,12 @@ void MeshMRF::fillGraph()
 		    	costvec[f].site=f;
 			if(_facehitcount[f]>0)
 			{
-			      	//costvec[f].cost=DataOneDiff(_facelabelcosts[f][l]/(float)_facehitcount[f]);
-		    		costvec[f].cost=DataLog(_facelabelcosts[f][l]/(float)_facehitcount[f]);
+			      	costvec[f].cost=DataOneDiff(_facelabelcosts[f][l]/(float)_facehitcount[f]);
+//		    		costvec[f].cost=DataLog(_facelabelcosts[f][l]/(float)_facehitcount[f]);
 				// Add the data prior
-				costvec[f].cost+=_facepriorcosts[f][l];
-				costvec[f].cost*=_facesizevec[f]/_avfacesize;
+				// TODO (MAC) This is a bunch of hacks
+//				costvec[f].cost+=_facepriorcosts[f][l];
+//				costvec[f].cost*=_facesizevec[f]/_avfacesize;
 			}
 			else
 			{
@@ -384,9 +390,11 @@ void MeshMRF::process(const std::vector< std::string> &imglist, const std::vecto
 
 	// Bootstrap the graph...
 	timer.reset(); timer.start();
-	std::cout<<"\nBoostrapping graph (faces="<<_numfaces<<"|labels="<<_numlabels<<")... ";
+	std::cout<<"\nBoostrapping graph (faces="<<_numfaces<<"|labels="<<_numlabels<<")... " << std::endl;
 	_lbpgraph=new mrf::LBPGraph(_numfaces,_numlabels);
+	std::cout<<"\n Filling out graph..." << std::endl;
 	fillGraph();
+	// TODO (MAC): this should prob be PottsNormals, but scaled properly
 	_lbpgraph->set_smooth_cost(&Potts);
 	timer.stop();
 	std::cout<< " done." << timer.getTimeSec();
