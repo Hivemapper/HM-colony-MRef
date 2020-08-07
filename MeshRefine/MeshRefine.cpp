@@ -101,8 +101,19 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
     }
     count++;
   }
-  if (_verboselevel > 1) { std::cout << "\nInvalidated NAN -> " << (float) nancount / (float) count * 100.0 << "%"; }
-  if (_verboselevel > 1) { std::cout << "\nInvalidated SIZE ->" << (float) sizecount / (float) count * 100.0 << "%"; }
+  if (_verboselevel > 1) {
+    std::cout << "Invalidated NAN -> " << (float) nancount / (float) count * 100.0 << "%" << std::endl;
+    std::cout << "Invalidated SIZE ->" << (float) sizecount / (float) count * 100.0 << "%" << std::endl;
+  }
+
+  for (int y = 0; y < grad.rows(); y++) {
+    if ( !(std::isfinite(grad(y, 0))) || !(std::isfinite(grad(y, 1))) || !(std::isfinite(grad(y, 2)))) {
+      std::cout << "MeshRefine: Another Nan in grad! This is bad; What's going on?\n y= " << y << std::endl;
+      std::cout << "y: " << y <<"\t "<<grad(y, 0)<<"\t "<<grad(y, 1)<<"\t "<<grad(y, 2)<<"\t "<< std::endl;
+      std::cout << "avel: " << avel <<"\t gl: " << gl << std::endl;
+      exit(1);
+    }
+  }
   return clean;
 }
 
@@ -170,7 +181,7 @@ double MeshRefine::photoConsistency() {
       auto img0 = cv::imread(_imglistphoto->getElement(i), cv::IMREAD_GRAYSCALE);
       // downscale(img0, pyr); No downscaling - MRC
       if (img0.cols == 0 || img0.rows == 0) {
-        std::cout << "\nProblems Reading Image";
+        std::cout << "Problems Reading Image"<< std::endl;
         exit(1);
       }
       if (img0.type() != CV_8UC1) { img0.convertTo(img0, CV_8UC1); }
@@ -239,7 +250,7 @@ double MeshRefine::photoConsistency() {
       }
 //    }
   }
-  std::cout << "\n\t num image_pairs: " << image_pairs << std::endl;
+  std::cout << "\t num image_pairs: " << image_pairs << std::endl;
   return energy/image_pairs;
 }
 
@@ -289,19 +300,21 @@ void MeshRefine::process() {
         meshmrf.process(_imglistsem->getList(), _orilist->getList(), _ctr->_nummrfitervec[pyr]);
       }
       if (_verboselevel >= 0) {
-        std::cout << "\n||> Geometric Optimization <||";
+        std::cout << "\n||> Geometric Optimization <||" << std::endl;
       }
       //  *** Photometric and Semantic Consistency ***
       // Iterate over all images
       if (_verboselevel >= 0) {
-        std::cout << "\nLevel: " << pyr << "\tIteration: " << (iter + 1) << " / " << _ctr->_numitervec[pyr];
+        std::cout<<"Level: "<<pyr<<"\tIteration: "<<(iter+1)<<" / "<< _ctr->_numitervec[pyr]<< std::endl;;
       }
       for (int i = 0; i < _adjacency->rows(); i++) {
         // Check if image is a master
         // if ((*_adjacency)(i,i)> 0.0 )
         if ((*_adjacency)(i, i) > -1.0) {
 
-          if (_verboselevel >= 1) { std::cout << "\nProcessing base image " << i; }
+          if (_verboselevel >= 1) {
+            std::cout << "Processing base image " << i << std::endl;
+          }
           // Load base image stuff
           Orientation ori0 = orivec[i];
           ori0.downscalePyr(pyr);
@@ -311,7 +324,7 @@ void MeshRefine::process() {
           cv::Mat img0 = cv::imread(_imglistphoto->getElement(i), cv::IMREAD_GRAYSCALE);
           downscale(img0, pyr);
           if (img0.cols == 0 || img0.rows == 0) {
-            std::cout << "\nProblems reading image";
+            std::cout << "Problems reading image" << std::endl;
             exit(1);
           }
           if (img0.type() != CV_8UC1) { img0.convertTo(img0, CV_8UC1); }
@@ -333,7 +346,9 @@ void MeshRefine::process() {
             if ((*_adjacency)(i, j) > 0.0 && j != i) {
               image_pairs += 1;
 
-              if (_verboselevel >= 1) { std::cout << "\nProcessing match image " << j; }
+              if (_verboselevel >= 1) {
+                std::cout << "Processing match image " << j << std::endl;
+              }
               // Load slave img stuff
               PRSTimer timer2;
               timer2.start();
@@ -356,7 +371,7 @@ void MeshRefine::process() {
               // and if available Semantic data terms
               double img_energy = gradcomp.process();
               energy += img_energy;
-              std::cout << "IMG " << i << " " << j << " img_energy: " << img_energy;
+              std::cout << " IMG " << i << " " << j << " img_energy: " << img_energy;
               std::cout << " \t Energy: " << energy << std::endl;
 
               //energy+=gradcomp.process();
@@ -381,11 +396,11 @@ void MeshRefine::process() {
         }
       }
       std::cout << "\n\t num image_pairs: " << image_pairs << std::endl;
-      std::cout << "\n\t energy/image_pairs: " << energy/image_pairs << std::endl;
+      std::cout << "\t energy/image_pairs: " << energy/image_pairs << std::endl;
 
       if (_verboselevel >= 0) {
-        std::cout << "\nEnergy=" << energy << " || Avg Delta energy=" << energy/image_pairs - oldenergy << " || Av. face size="
-                  << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n";
+        std::cout << "Energy=" << energy << " || Avg Delta energy=" << energy/image_pairs - oldenergy << " || Av. face size="
+                  << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n" << std::endl;
       }
       oldenergy = energy/image_pairs;
       image_pairs = 0;
@@ -419,7 +434,8 @@ void MeshRefine::process() {
 
       tptime.stop();
       if (_verboselevel >= 1) {
-        std::cout << " Thinplate took: " << tptime.getTimeSec() << " sec. Valid:" << (float) clean / (float) numverts;
+        std::cout << " Thinplate took: " << tptime.getTimeSec()
+                  << " sec. Valid:" << (float) clean / (float) numverts << std::endl;
       }
 
       //********* Edge Gradient *********
@@ -434,7 +450,9 @@ void MeshRefine::process() {
       // Here do the overall scaling of the gradient
       updateMesh(*_mesh, grad);
       itertimer.stop();
-      if (_verboselevel >= 1) { std::cout << "\n Iteration took: " << itertimer.getTimeMin() << " min"; }
+      if (_verboselevel >= 1) {
+        std::cout << " Iteration took: " << itertimer.getTimeMin() << " min" << std::endl;
+      }
 
     } // end iterations
 

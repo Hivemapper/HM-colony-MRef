@@ -212,7 +212,7 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 	int modelcount=0;
     	for( s=0; s<imglist.size(); s++)
 	{
-		std::cout<<"\nProcessing imgid ["<<s<<"]" << std::endl;
+		std::cout<<"Processing likelihood img, id ["<<s<<"]" << std::endl;
 		PRSTimer timer;
 		timer.start();
 		// Load the orientation
@@ -233,7 +233,7 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
 		// Check if there is some intersection
 		if(!hitsModel(ori))
 		{
-			std::cout<<"\nSkipping image: no projection" << std::endl;
+			std::cout<<"Skipping image: no projection" << std::endl;
 		 	continue;
 		}
 		else
@@ -296,7 +296,7 @@ void MeshMRF::calcDataCosts( const std::vector<std::string> &imglist, const std:
     		}
 		delete limage;
 	}
-	std::cout<<"\nAv. size of model projection "<<float(floor(allpercvalid*10000/modelcount))/100.0<<"%.";
+	std::cout<<"Av. size of model projection "<<float(floor(allpercvalid*10000/modelcount))/100.0<<"%." << std::endl;
 	delete _rtracer;
 	_rtracer=NULL;
 }
@@ -337,8 +337,10 @@ void MeshMRF::fillGraph()
 		{
 		    	n=ff_it->idx();
 			_pairwisecostmap[m][i].first=n;
-			_pairwisecostmap[m][i++].second=pairwiseCost(f_it,ff_it);
-		    	_lbpgraph->set_neighbors_single(m,n++); // Be careful... this sets both directions between graph ...
+
+			float paircost = pairwiseCost(f_it,ff_it);
+			_pairwisecostmap[m][i++].second = paircost;
+		  _lbpgraph->set_neighbors_single(m,n++); // Be careful... this sets both directions between graph ...
 		}
 		m++;
 	}
@@ -352,12 +354,23 @@ void MeshMRF::fillGraph()
 		    	costvec[f].site=f;
 			if(_facehitcount[f]>0)
 			{
-			      	costvec[f].cost=DataOneDiff(_facelabelcosts[f][l]/(float)_facehitcount[f]);
-//		    		costvec[f].cost=DataLog(_facelabelcosts[f][l]/(float)_facehitcount[f]);
+				// TODO (MAC) This is where the class-specific costs are calculated
+				// _facepriorcosts relates face normals to non-right-angle penalties
+				// _facesizevec/av I'm pretty sure just weights by face surface area
+				// the _facelabelcosts line simply takes likelihoods and turns them
+				// into costs of size ~(0-1), where cost 0 means the likelihood of
+				// that class is 1 (definitely is that class), and cost=1 means
+				// likelihood 0 (definitely not that class)
+
+				//  costvec[f].cost = DataOneDiff(_facelabelcosts[f][l]/(float)_facehitcount[f]);
+		    		costvec[f].cost = DataLog(_facelabelcosts[f][l]/(float)_facehitcount[f]);
 				// Add the data prior
-				// TODO (MAC) This is a bunch of hacks
-//				costvec[f].cost+=_facepriorcosts[f][l];
-//				costvec[f].cost*=_facesizevec[f]/_avfacesize;
+				costvec[f].cost+=_facepriorcosts[f][l];
+				costvec[f].cost*=_facesizevec[f]/_avfacesize;
+				// TODO (MAC) We need to include a cost of switching classes in
+				//   general. This can be done by adding a cost to all classes except
+				//   the argmax class from _facelabelcosts
+
 			}
 			else
 			{
@@ -372,8 +385,12 @@ void MeshMRF::fillGraph()
 void MeshMRF::assignMinLabels()
 {
   int f=0;
+  int new_label;
+  short old_label;
 	for (MyMesh::FaceIter f_it=_mesh->faces_begin(); f_it!=_mesh->faces_end(); ++f_it) {
-		_mesh->data(*f_it).setlabelid(_lbpgraph->what_label(f));
+		new_label = _lbpgraph->what_label(f);
+		old_label = _mesh->data(*f_it).labelid();
+		_mesh->data(*f_it).setlabelid(new_label);
 		f++;
 	}
 }
@@ -381,36 +398,36 @@ void MeshMRF::assignMinLabels()
 void MeshMRF::process(const std::vector< std::string> &imglist, const std::vector< std::string > &orilist, const int maxiterations)
 {
 	// For each face compute the data cost of each label
-	std::cout<<"\nAssigning costs to faces...";
+	std::cout<<" Zeroed out -- Assigning previous costs to faces..." << std::endl;
 	PRSTimer timer; timer.start();
 	calcDataCosts( imglist, orilist);
 	calcDataCostPrior();
 	timer.stop();
-	std::cout<< " done." << timer.getTimeSec();
+	std::cout<< " done." << timer.getTimeSec() << std::endl;
 
 	// Bootstrap the graph...
 	timer.reset(); timer.start();
-	std::cout<<"\nBoostrapping graph (faces="<<_numfaces<<"|labels="<<_numlabels<<")... " << std::endl;
+	std::cout<<" Boostrapping graph (faces="<<_numfaces<<"|labels="<<_numlabels<<")... " << std::endl;
 	_lbpgraph=new mrf::LBPGraph(_numfaces,_numlabels);
-	std::cout<<"\n Filling out graph..." << std::endl;
+	std::cout<<" Filling out graph..." << std::endl;
 	fillGraph();
 	// TODO (MAC): this should prob be PottsNormals, but scaled properly
 	_lbpgraph->set_smooth_cost(&Potts);
 	timer.stop();
-	std::cout<< " done." << timer.getTimeSec();
+	std::cout<< " done." << timer.getTimeSec() << std::endl;
 
 	// Optimization
 	timer.reset(); timer.start();
-	std::cout<<"\nOptimization ...";
+	std::cout<<" Optimization ..." << std::endl;
 	float energy = 0;
 	for (int i=0;i<maxiterations;i++) {
 		energy = _lbpgraph->optimize(1);
-		std::cout<< "testing...  ";
+		std::cout<< "testing...  " << std::endl;
 		std::cout<< "Energy_opt_e6 = " << energy*0.000001 << std::endl;
 	}
 	timer.stop();
-	std::cout<<"\n Energy = "<< energy << std::endl;
-	//std::cout<< " done." << timer.getTimeSec();
+	std::cout<<" Energy = "<< energy << std::endl;
+	std::cout<< " done." << timer.getTimeSec();
 
 	// Assign resulting face labels to graph
 	assignMinLabels();

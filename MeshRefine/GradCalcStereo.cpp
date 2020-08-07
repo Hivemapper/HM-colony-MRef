@@ -141,12 +141,10 @@ void GradCalcStereo::setSecondView(	cv::Mat &img1,
 
 	if(_smode==ON) {
 		if (_jaclabels1x) {
-			std::cout << " GradCalcStereo line 139, _jaclabels1x exists" << std::endl;
 			_jaclabels1x->delocateImage();
 			_jaclabels1x = new LikelihoodImage(_rows1,_cols1,_numlabels);
 		}
 		if (_jaclabels1y) {
-			std::cout << " GradCalcStereo line 143, _jaclabels1y exists" << std::endl;
 			_jaclabels1y->delocateImage();
 			_jaclabels1y = new LikelihoodImage(_rows1,_cols1,_numlabels);
 		}
@@ -395,11 +393,13 @@ void GradCalcStereo::updateTIDImagesOcclusions
 			}
 		}
 	}
-	std::cout<< "================================"<< std::endl;
-	std::cout<< "nohitcounter: " << nohitcounter << std::endl;
-	std::cout<< "counter:      " << counter << std::endl;
-	std::cout<< "_meandist:    " << _meandist/(double)counter << std::endl;
-	std::cout<< "================================"<< std::endl;
+	if(_verboselevel>=2) {
+		std::cout << "====================================" << std::endl;
+		std::cout << " img-img not-hitting mesh counter: " << nohitcounter << std::endl;
+		std::cout << " img-img     hitting mesh counter: " << counter << std::endl;
+		std::cout << " img-mesh _meandist:  " << _meandist / (double) counter << std::endl;
+		std::cout << "====================================" << std::endl;
+	}
 	_meandist/=(double)counter;
 }
 

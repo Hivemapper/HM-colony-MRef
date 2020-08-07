@@ -125,7 +125,10 @@ void assembleTileList(std::vector<int>& tilestoprocess, const int starttile, con
   }
 }
 
-void prepareOutput(const std::string basepath, const IOList& tilelist, const std::vector<int>& tilenum, std::vector<std::string>& outfilenames)
+void prepareOutput(const std::string basepath, const IOList& tilelist,
+                   const std::vector<int>& tilenum,
+                   std::vector<std::string>& infilenames,
+                   std::vector<std::string>& outfilenames)
 {
   boost::filesystem::path fsbasepath(basepath);
   if(!boost::filesystem::exists(fsbasepath))
@@ -146,11 +149,17 @@ void prepareOutput(const std::string basepath, const IOList& tilelist, const std
   // Make the new output files
   for(int i=0; i<tilenum.size(); i++)
   {
-        std::string filename=basepath;
-    filename.append("/out/");
-    filename.append(tilelist.getNameWithoutEnding(tilenum[i]));
-    filename.append(".ply");
-    outfilenames.push_back(filename);
+    std::string outfilename=basepath;
+    outfilename.append("/out/");
+    outfilename.append(tilelist.getNameWithoutEnding(tilenum[i]));
+    outfilename.append("_output.obj");
+    outfilenames.push_back(outfilename);
+
+    std::string infilename=basepath;
+    infilename.append("/out/");
+    infilename.append(tilelist.getNameWithoutEnding(tilenum[i]));
+    infilename.append("_input.obj");
+    infilenames.push_back(infilename);
   }
 }
 
@@ -204,12 +213,16 @@ int main(int argc, char* argv[]){
 
   // Preparing output folder and output tile names
   std::vector<std::string> outfilenames;
-  prepareOutput(basepath, meshlist, tilestoprocess, outfilenames);
+  std::vector<std::string> infilenames;
+  prepareOutput(basepath, meshlist, tilestoprocess, infilenames, outfilenames);
 
   printSummary(tilestoprocess,outfilenames,meshlist);
 
+  // note this script is only set up to run 1 mesh/tile at pyramid level 0
+  int pyr_id = 0;
+
   MyMesh mesh; // mesh with original vertices
-  std::string meshname(meshlist.getElement(0));
+  std::string meshname(meshlist.getElement(pyr_id));
   MeshIO::readMesh(mesh, meshname, true, false, true, false, true);
 
   mesh.request_face_colors();
@@ -224,7 +237,7 @@ int main(int argc, char* argv[]){
    MeshConv::faceLabelToFaceColorICCV(mesh);
 
   std::cout<<" Saving input mesh face colors to file " << std::endl;
-  MeshIO::writeMesh(mesh, "data2/out/input_fcolor.obj",true,true, true, false);
+  MeshIO::writeMesh(mesh, infilenames[pyr_id],true,true, true, false);
   int numverts = mesh.n_vertices();
 
   // Read mesh meta data
@@ -261,13 +274,13 @@ int main(int argc, char* argv[]){
     MeshRefine refmod(&mesh, &mmd, &ctr, &adjacency, &imglist, &likelilist, &orilist);
    refmod.process();
 
-  std::cout<<"\nSaving..."<<outfilenames[0] << std::endl;
+  std::cout<<"\nSaving..."<<outfilenames[pyr_id] << std::endl;
   mesh.request_face_colors();
   mesh.request_vertex_colors();
   std::cout<<" Saving face labels to face colors " << std::endl;
   MeshConv::faceLabelToFaceColorICCV(mesh);
   std::cout<<" Saving mesh face colors to file " << std::endl;
-  MeshIO::writeMesh(mesh, "data2/out/output_fcolor.obj",true,true, true, false);
+  MeshIO::writeMesh(mesh, outfilenames[pyr_id],true,true, true, false);
 
   std::cout<<"..Done";
 

@@ -55,8 +55,6 @@ void readMesh( MyMesh &ommesh, std::string savename, bool hasvertcolor, bool has
 			ommesh.request_face_normals();
 			// let the mesh update the normals
       ommesh.update_normals();
-			// dispose the face normals, as we don't need them anymore
-//      ommesh.release_face_normals();
 		}
 
 	}
@@ -69,7 +67,7 @@ void readMesh( MyMesh &ommesh, std::string savename, bool hasvertcolor, bool has
 	if( hasclasses )
 	{
 		// TODO (MAC) figure out how to read in "classification" field as a vertex scalar
-		std::cout << "Error (MeshIO.cpp): Unclear on how to read classifications from file " << std::endl;
+		std::cout << "MeshIO.cpp: Make sure that the classifications (uint8_t) are saved with column name  'alpha' " << std::endl;
 	}
 
 	if(extension==".obj") {

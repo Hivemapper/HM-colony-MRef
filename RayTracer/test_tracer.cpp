@@ -82,6 +82,7 @@ Eigen::Matrix3d K(3,3);
 	K<< 1205.478739731, 0.00000000, 876.12031494, 0.00000000, 1205.478739731, 520.69784667, 0.00000000, 0.00000000, 1.00000000;
 	Eigen::Vector3d C(3,1);
 	C<< 89.695040476741269, -103.84232057545159, 95.145437410101295;
+//	 Offset
 	Eigen::Vector3d O(3,1);
 	O << 0, 0, 0.0;
 	O << 0, 0, 0.0;
@@ -95,12 +96,14 @@ Eigen::Matrix3d K(3,3);
 	std::string loadname("/home/centos/MRef/data2/mesh/segmentation_mesh_n_asc_f.ply");
 	MyMesh mesh;
   MeshIO::readMesh( mesh, loadname, true, false);
+//	mesh.request_face_colors();
 	mesh.request_vertex_colors();
 	// takes the 4th channel of colors and turns it into the classification value
 //	MeshConv::vertexAlphaToVertexLabel(mesh);
 	MeshConv::vertexRGBToVertexGreyLabel(mesh);
 	// sets face classification to the first vertex class
 	MeshConv::vertexLabelToFaceLabel(mesh);
+//	MeshConv::faceColorToFaceLabel(mesh);
 
     	std::vector<std::vector<float> > verts;
     	std::vector<std::vector<int> > faces;
