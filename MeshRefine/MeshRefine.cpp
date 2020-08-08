@@ -75,8 +75,8 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
     // Gradient length
     double sgl = pow(grad(y, 0), 2.0) + pow(grad(y, 1), 2.0) + pow(grad(y, 2), 2.0);
     if (sgl > 0) {
-      gl = sqrt(sgl);
-      scale = avel / gl;
+      gl = sqrt(sgl); // 2-norm of the gradient vec
+      scale = avel / gl; // normalize gradient (1/gl) and multiply by "avel" 
     } else {
       gl = 0;
       scale = 0;
@@ -90,6 +90,7 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
     }
       // Rubber out to long
     else if ((gl > avel)) {
+      // scale the gradient to be length "avel" if it's larger than avel (I think just capping magnitude)
       grad(y, 0) *= scale;
       grad(y, 1) *= scale;
       grad(y, 2) *= scale;
@@ -429,10 +430,14 @@ void MeshRefine::process() {
         penalties[4] = _ctr->_smoothweightvecpavement[pyr]; // pavement
         penalties[5] = _ctr->_smoothweightvecbuilding[pyr]; // building
         penalties[6] = _ctr->_smoothweightvecwater[pyr]; // water
-        // TODO: This is where penalties get set per class
+        // TODO: This is where gradient updates get set at each mesh vertex, based on 
+        //    whether or not all the faces sharing that vertex have the same class 
+        // (grad *= penalty, so I guess decreasing the magnitude since penalty <1),
+        //    OR if they are NOT all the same label, set the gradient to 0 at that vertex.
         smoothgen.weightClassSpecificPenalties(penalties);
         tempgrad = smoothgen.getGrad() * (-1.0);
       } else {
+        // so this _smoothweightvec value only matters if you're not using class-specific weights
         tempgrad = smoothgen.getGrad() * (-1.0) * _ctr->_smoothweightvec[pyr];
       }
       int clean = cleanGrad(avedgelength, tempgrad, counter, *_mesh);
