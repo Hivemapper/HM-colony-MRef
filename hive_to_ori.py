@@ -1,10 +1,11 @@
 import json
 from itertools import chain
 
-data_folder   = 'data2/'
-camera_file   = data_folder+"camera_data_tf_2.json"
+data_folder   = 'data_sr_high/'
+camera_file   = data_folder+"camera_data_tf_1.json"
 ori_folder    = "ori/"
 img_folder    = "img/"
+likeli_folder = "likeli/"
 output_folder = data_folder+ori_folder
 
 # Reading the json as a dict
@@ -27,9 +28,13 @@ s = 0
 extrinsics = data['extrinsics']   
 orilist = open(data_folder+"orilist.txt", "w")
 imglist = open(data_folder+"imglist.txt", "w")
+likelilist = open(data_folder+"likelilist.txt", "w")
+
+views = data['views']
 
 for entry in extrinsics:
-  i =  entry['key'] + 1 # increment to account for 0-indexing of mvg outpt to 1-indexing of images
+  view_i = [ view['key']==entry['key'] for view in views].index(True)
+  i = int(views[view_i]['value']['ptr_wrapper']['data']['filename'].split('.')[0])
   c =  entry['value']['center']
   r =  entry['value']['rotation']
   r =  list(chain.from_iterable(r))
@@ -54,9 +59,10 @@ for entry in extrinsics:
   f.close()
   orilist.write(ori_folder + "{0}.or\n".format(i))
   imglist.write(img_folder + "{0}.png\n".format(i))
+  likelilist.write(likeli_folder + "{0}.tif\n".format(i))
 orilist.close()
 imglist.close()
-
+likelilist.close()
 ##  Example: firstori.or
 # $id none
 # $rc               -1               -1
