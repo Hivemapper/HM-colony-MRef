@@ -3,6 +3,5 @@
 *.or
 *.ply
 *.png
-data2/
-data/
+data*/
 bin/
