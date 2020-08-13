@@ -258,7 +258,6 @@ void MeshMRF::calcDataCosts(const std::vector <std::string> &imglist, const std:
     //ImgIO::saveVisFloat(out,savename);
     //exit(1);
 
-
     // Set the ray tracer
     _rtracer->setView(TFAR, TNEAR, ori);
 
