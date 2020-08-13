@@ -12,7 +12,7 @@
 // Global stuff, dirty but posssible other than that? 
 static std::vector <std::vector<std::pair < int, float>> >
 _pairwisecostmap;
-static const float PENALTYDATALABEL = 0.35;
+static const float PENALTYDATALABEL = 0.25;
 static const float PENALTYSMOOTH = 0.2;
 
 // Facade, Ground, Veg, Roof, Wat
@@ -83,7 +83,7 @@ float MeshMRF::dataPrior(int label, MyMesh::Normal normal) {
       cost += (0.5 * penalty);
     }
   } else if ((label == 3) || (label == 4)) {   // ground --> ground natural+manmade
-    if (fabs(diffangleup) > 30.0) cost += penalty;
+    if (fabs(diffangleup) > 30.0) cost += penalty; //((fabs(diffangleup))/90.0)*penalty;
   } else if (label == 6) {   // water --> water
     if (fabs(diffangleup) > 20.0) cost += penalty;
   }
@@ -198,7 +198,7 @@ bool MeshMRF::hitsModel(Orientation &ori) {
   if ((ceil(x(0)) < cols - 1 && floor(x(0)) > 0) && (ceil(x(1)) < rows - 1 && floor(x(1)) > 0)) { return true; }
 
   // TODO: (MAC) forcing this true
-  std::cout << "MeshMRF:192 -- Forcing image to return within bounding box" << std::endl;
+//  std::cout << "MeshMRF:192 -- Forcing image to return within bounding box" << std::endl;
   return true;
 }
 
@@ -301,9 +301,16 @@ void MeshMRF::calcDataCostPrior() {
   for (MyMesh::FaceIter f_it = _mesh->faces_begin(); f_it != _mesh->faces_end(); ++f_it) {
     n = _mesh->normal(*f_it);
     _avfacesize += _facesizevec[f] = MeshGeom::faceArea(f_it, _mesh);
+    float total_face_cost = 0;
     for (int l = 0; l < _numlabels; l++) {
       _facepriorcosts[f][l] = dataPrior(l, n);
+      total_face_cost += _facepriorcosts[f][l];
     }
+//    if (f < 30) {
+//      std::cout << "f: n[0:2]: "<< f << ": " << n[0] <<","<< n[1] <<","<< n[2] << std::endl;
+//      std::cout << "\t _facepriorcosts[f][:]: "<< total_face_cost << ": " << n[0] <<","<< n[1] <<","<< n[2] << std::endl;
+//
+//    }
     f++;
   }
   _avfacesize /= (double) f;
@@ -348,8 +355,13 @@ void MeshMRF::fillGraph() {
         // into costs of size ~(0-1), where cost 0 means the likelihood of
         // that class is 1 (definitely is that class), and cost=1 means
         // likelihood 0 (definitely not that class)
-
-        //  costvec[f].cost = DataOneDiff(_facelabelcosts[f][l]/(float)_facehitcount[f]);
+//         if (f<10) {
+//           std::cout <<"(" << f <<", "<< l <<") :";
+//           std::cout<< ":\t " <<DataLog(_facelabelcosts[f][l] / (float) _facehitcount[f]);
+//           std::cout<< ":\t " <<_facepriorcosts[f][l];
+//           std::cout<< ":\t " <<_facesizevec[f] / _avfacesize  << std::endl;
+//         }
+//        costvec[f].cost = DataOneDiff(_facelabelcosts[f][l]/(float)_facehitcount[f]);
         costvec[f].cost = DataLog(_facelabelcosts[f][l] / (float) _facehitcount[f]);
         // Add the data prior
         costvec[f].cost += _facepriorcosts[f][l];
@@ -409,8 +421,8 @@ void MeshMRF::process(const std::vector <std::string> &imglist, const std::vecto
   float energy = 0;
   for (int i = 0; i < maxiterations; i++) {
     energy = _lbpgraph->optimize(1);
-    std::cout << "testing...  " << std::endl;
-    std::cout << "Energy_opt_e6 = " << energy * 0.000001 << std::endl;
+    std::cout << "testing...smooth_cost_func only  " << std::endl;
+    std::cout << "i, Energy_MRF = " <<i<< "\t:" << energy << std::endl;
   }
   timer.stop();
   std::cout << " Energy = " << energy << std::endl;

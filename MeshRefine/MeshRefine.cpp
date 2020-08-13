@@ -64,6 +64,12 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
   double _MULTIPLICATOR = .5;
   double avel = avedgelength * _MULTIPLICATOR;
 
+  float avlen = 0;
+  float newavlen = 0;
+  float oldnorm, newnorm;
+  int totalcount = 0;
+
+
   // Some counters
   int clean = 0;
   int count = 0;
@@ -90,21 +96,33 @@ int MeshRefine::cleanGrad(const float avedgelength, Eigen::MatrixXf &grad, Eigen
     }
       // Rubber out to long
     else if ((gl > avel)) {
+      oldnorm = std::sqrt(grad(y, 0)*grad(y, 0) + grad(y, 1)*grad(y, 1) + grad(y, 2)*grad(y, 2));
+      avlen += oldnorm;
+
       // scale the gradient to be length "avel" if it's larger than avel (I think just capping magnitude)
       grad(y, 0) *= scale;
       grad(y, 1) *= scale;
       grad(y, 2) *= scale;
+      newnorm = std::sqrt(grad(y, 0)*grad(y, 0) + grad(y, 1)*grad(y, 1) + grad(y, 2)*grad(y, 2));
+      newavlen += newnorm;
       sizecount++;
       counter(y)++;
     } else {
+      oldnorm = std::sqrt(grad(y, 0)*grad(y, 0) + grad(y, 1)*grad(y, 1) + grad(y, 2)*grad(y, 2));
+      avlen += oldnorm;
+      newnorm = std::sqrt(grad(y, 0)*grad(y, 0) + grad(y, 1)*grad(y, 1) + grad(y, 2)*grad(y, 2));
+      newavlen += newnorm;
       clean++;
       counter(y)++;
     }
     count++;
   }
-  if (_verboselevel > 1) {
+  if (_verboselevel >= 0) {
+    std::cout << "**** COUNT **** -> " << (float) count << std::endl;
     std::cout << "Invalidated NAN -> " << (float) nancount / (float) count * 100.0 << "%" << std::endl;
     std::cout << "Invalidated SIZE ->" << (float) sizecount / (float) count * 100.0 << "%" << std::endl;
+    std::cout << "cleanGrad::    avlen/count: " << avlen/static_cast<float>(count) <<std::endl;
+    std::cout << "cleanGrad:: newavlen/count: " << newavlen/static_cast<float>(count) <<std::endl;
   }
 
   for (int y = 0; y < grad.rows(); y++) {
@@ -145,14 +163,24 @@ void MeshRefine::updateMesh(MyMesh &mesh, Eigen::MatrixXf &grad) {
 }
 
 void MeshRefine::scaleGradByCounter(Eigen::MatrixXf &grad, Eigen::VectorXi &counter) {
-
+  float avlen = 0;
+  float newavlen = 0;
+  float oldnorm, newnorm;
+  int totalcount = 0;
   for (int idx = 0; idx < grad.rows(); idx++) {
     if (counter(idx) > 0) {
+      oldnorm = std::sqrt(grad(idx, 0)*grad(idx, 0) + grad(idx, 1)*grad(idx, 1) + grad(idx, 2)*grad(idx, 2));
+      avlen += oldnorm;
+      totalcount++;
       grad(idx, 0) /= static_cast<float>(counter(idx));
       grad(idx, 1) /= static_cast<float>(counter(idx));
       grad(idx, 2) /= static_cast<float>(counter(idx));
+      newnorm = std::sqrt(grad(idx, 0)*grad(idx, 0) + grad(idx, 1)*grad(idx, 1) + grad(idx, 2)*grad(idx, 2));
+      newavlen += newnorm;
     }
   }
+  std::cout << "scaleGradByCounter::    avlen/totalcount: " << avlen/static_cast<float>(totalcount) <<std::endl;
+  std::cout << "scaleGradByCounter:: newavlen/totalcount: " << newavlen/static_cast<float>(totalcount) <<std::endl;
 }
 
 
@@ -216,7 +244,8 @@ void MeshRefine::process() {
       if (_verboselevel >= 0) {
         std::cout << "Level: " << pyr << "\tIteration: " << (iter + 1) << " / " << _ctr->_numitervec[pyr] << std::endl;;
       }
-      for (int i = 0; i < _adjacency->rows(); i++) {
+      for (int i = 0; i < 2; i++) {
+//      for (int i = 0; i < _adjacency->rows(); i++) {
         // Check if image is a master
         // if ((*_adjacency)(i,i)> 0.0 )
         if ((*_adjacency)(i, i) > -1.0) {
@@ -251,6 +280,7 @@ void MeshRefine::process() {
                                   _ctr->_verboselevel);
           // Get vector with all slave images
           for (int j = 0; j < _adjacency->cols(); j++) {
+//          for (int j = 0; j < 2; j++) {
             // avoid reference image
             if ((*_adjacency)(i, j) > 0.0 && j != i) {
               image_pairs += 1;
@@ -258,7 +288,7 @@ void MeshRefine::process() {
               if (_verboselevel >= 1) {
                 std::cout << "Processing match image " << j << std::endl;
               }
-              // Load slave img stuff
+              // Load slave img  stuff
               PRSTimer timer2;
               timer2.start();
               Orientation ori1 = orivec[j];
@@ -292,11 +322,14 @@ void MeshRefine::process() {
               tempgrad = gradcomp.getPhotoGrad() * _ctr->_photoweightvec[pyr] * pow(gradcomp.getMeanDist(), 2.0) /
                          pow((ori1.getK())(0, 0), 2.0);
               //	std::cout<<tempgrad;
+              std::cout<<"Photograd: MeanDist, oriK, dist/K:" << pow(gradcomp.getMeanDist(), 2.0) << "\t " <<pow((ori1.getK())(0, 0), 2.0)<<"\t "<<pow(gradcomp.getMeanDist(), 2.0) / pow((ori1.getK())(0, 0), 2.0)<<std::endl;
+              std::cout << "********    PHOTO-GRAD ********   " << std::endl;
               cleanGrad(avedgelength, tempgrad, counter, *_mesh);
               grad += tempgrad;
 
               // Get the gradient, rubber nan and a
               tempgrad = gradcomp.getSemanticGrad() * _ctr->_semweightvec[pyr];
+              std::cout << "******** SEMANTIC-GRAD ********   " << std::endl;
               cleanGrad(avedgelength, tempgrad, counter, *_mesh);
               grad += tempgrad;
               nm++;
@@ -308,13 +341,13 @@ void MeshRefine::process() {
       std::cout << "\t energy/image_pairs: " << energy / image_pairs << std::endl;
 
       if (_verboselevel >= 0) {
-        std::cout << "Energy=" << energy << " || Avg Delta energy=" << energy / image_pairs - oldenergy
+        std::cout << "Energy=" << energy << " || Delta energy=" << energy - oldenergy
                   << " || Av. face size="
                   << floor(pixsize / (float) nm * 10.0) * 0.1 << "[pix]\n" << std::endl;
       }
-      oldenergy = energy / image_pairs;
+      oldenergy = energy/image_pairs;
       image_pairs = 0;
-
+      std::cout << "\n******** SCALE-BY-CTR-GRAD ********   " << std::endl;
       scaleGradByCounter(grad, counter);
 
       // ********* Thin plate gradient ********
@@ -343,6 +376,7 @@ void MeshRefine::process() {
         // so this _smoothweightvec value only matters if you're not using class-specific weights
         tempgrad = smoothgen.getGrad() * (-1.0) * _ctr->_smoothweightvec[pyr];
       }
+      std::cout << "\n******** THIN-PLATE-GRAD ********   " << std::endl;
       int clean = cleanGrad(avedgelength, tempgrad, counter, *_mesh);
       grad += tempgrad;
 
@@ -357,6 +391,7 @@ void MeshRefine::process() {
         GradStraightEdges edgegen(*_mesh);
         edgegen.oneRingStraightEdge2();
         tempgrad = edgegen.getGrad();
+        std::cout << "\n******** STRAIGHT-EDGE-GRAD ********   " << std::endl;
         cleanGrad(avedgelength, tempgrad, counter, *_mesh);
         grad += tempgrad * _ctr->_straightedgeweightvec[pyr];
       }

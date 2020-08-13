@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include "lbp_graph.h"
+#include <iostream>
 
 MRF_NAMESPACE_BEGIN
 
@@ -17,20 +18,24 @@ MRF_NAMESPACE_BEGIN
 
   ENERGY_TYPE LBPGraph::compute_energy() {
     ENERGY_TYPE energy = 0;
+    ENERGY_TYPE energydc = 0;
+    ENERGY_TYPE energyscf = 0;
 
-#pragma omp parallel for reduction(+:energy)
+#pragma omp parallel for reduction(+:energydc)
     for (std::size_t vertex_idx = 0; vertex_idx < vertices.size(); ++vertex_idx) {
       Vertex const &vertex = vertices[vertex_idx];
-      energy += vertex.data_cost;
+      energydc += vertex.data_cost;
     }
 
-#pragma omp parallel for reduction(+:energy)
+#pragma omp parallel for reduction(+:energyscf)
     for (std::size_t edge_idx = 0; edge_idx < edges.size(); ++edge_idx) {
       DirectedEdge const &edge = edges[edge_idx];
-      energy += smooth_cost_func(edge.v1, edge.v2,
+      energyscf += smooth_cost_func(edge.v1, edge.v2,
                                  vertices[edge.v1].label, vertices[edge.v2].label);
     }
 
+    std::cout <<"energy_cost_data: "<< energydc << "\t energy_smooth_cf: "<< energyscf << std::endl;
+    energy = energydc + energyscf;
     return energy;
   }
 
