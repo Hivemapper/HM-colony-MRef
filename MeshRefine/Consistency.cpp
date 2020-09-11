@@ -10,10 +10,14 @@
 #include "../FileSystemUtil/FDUtil.h"
 
 #include <iostream>
+#include <fstream>
+#include <string>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <boost/filesystem.hpp>
+
+#define MAXBUFSIZE  ((int) 1e6)
 
 static void showUsage(std::string name) {
   std::cerr << "Usage: " << name << " <option(s)> SOURCES"
@@ -180,6 +184,16 @@ void printSummary(const std::vector<int> &tilestoprocess, const std::vector <std
   }
 }
 
+Eigen::MatrixXf readMatrix(std::string filename, int size){
+  std::ifstream file(filename);
+  Eigen::MatrixXf adjacency(size, size);
+  for (int i = 0; i < adjacency.rows(); ++i){
+    for (int j = 0; j < adjacency.cols(); ++j){
+      file >> adjacency(i, j);
+    }
+  }
+  return adjacency;
+}
 
 int main(int argc, char *argv[]) {
   // Parse Input
@@ -247,55 +261,16 @@ int main(int argc, char *argv[]) {
   std::cout << " Saving input mesh RGB face colors to file " << std::endl;
   MeshIO::writeMesh(mesh, infilenames[pyr_id]+"_RGB"+".ply", true, true, true, false);
 
-
-//  int mac = 0;
-//  for (MyMesh::VertexIter v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
-//    int vertexclass = mesh.data(*v_it).classification();
-//    std::cout << "vertexclass " << vertexclass << " faceclass: (";
-//    for (MyMesh::VertexFaceIter vf_it = mesh.vf_iter(*v_it); vf_it.is_valid(); ++vf_it) {
-//      short faceclass = mesh.data(*vf_it).labelid();
-//      std::cout << " " << faceclass;
-//    }
-//    std::cout << " )" << std::endl;
-//    if (mac > 5) {
-//      std::cout << " " << std::endl;
-//      break;
-//    }
-//    mac++;
-//  }
-
   int numverts = mesh.n_vertices();
 
   // Read mesh meta data
   FDUtil::exchangeExtension(meshname, "mmd");
   MeshMetaData mmd(meshname);
   //  *** Photometric and Semantic Consistency ***
-
+  std::cout << "Test" << std::endl;
   // Boostrap full adjancy matrix
-  Eigen::MatrixXf adjacency(orilist.size(), orilist.size());
-  adjacency << 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-      0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-      0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-      0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-      0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0;
+  // Eigen::MatrixXf adjacency(orilist.size(),orilist.size());
+  Eigen::MatrixXf adjacency = readMatrix(basepath + "/geo.txt", orilist.size());
 
   MeshRefine refmod(&mesh, &mmd, &ctr, &adjacency, &imglist, &likelilist, &orilist);
   refmod.process();
@@ -309,23 +284,6 @@ int main(int argc, char *argv[]) {
   MeshConv::faceLabelToFaceColorICCV(mesh);
   std::cout << " Saving mesh Class face colors to file " << std::endl;
   MeshIO::writeMesh(mesh, outfilenames[pyr_id]+"_class.obj", true, true, true, false);
-
-//  mac = 0;
-//  for (MyMesh::VertexIter v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
-//    int vertexclass = mesh.data(*v_it).classification();
-//    std::cout << "vertexclass " << vertexclass << " faceclass: (";
-//    for (MyMesh::VertexFaceIter vf_it = mesh.vf_iter(*v_it); vf_it.is_valid(); ++vf_it) {
-//      short faceclass = mesh.data(*vf_it).labelid();
-//      std::cout << " " << faceclass;
-//    }
-//    std::cout << " )" << std::endl;
-//    if (mac > 5) {
-//      std::cout << " " << std::endl;
-//      break;
-//    }
-//    mac++;
-//  }
-
   std::cout << "..Done";
   return 0;
 }
