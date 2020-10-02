@@ -77,6 +77,8 @@ find mesh -name "*_f.ply" > $datafolder/meshlist.txt
 # remove the temp folders:
 rm -rf $datafolder/temp
 rm -rf $datafolder/$model_id/
+rm -rf $datafolder/likeli/*.png
+rm -rf $datafolder/likeli/*.jpg
 
 # TODO:
 # create orientation files, and the image adjacency matrix. The adjacency
@@ -94,3 +96,14 @@ rm -rf $datafolder/$model_id/
 #  copy/paste that text in, until we write in a file reader.
 
 # TODO: delete the temp dir, but I haven't actually tested and don't want to code it yet
+
+# The following steps also need to be checked before the data is ready:
+# 1) generate a ControlRefine.txt file (either copy from elsewhere, or
+# use the one the executable creates
+# 2) Update the nPixelsImgHeight, nPixelsImgWidth, and nClasses fields
+# (the width/height are in the sfm_data.json file)
+# 3) Make a mesh/[cloudname].mmd file, and possibly update x/y/z bounds
+#  I get the limits by opening the ply in CloudCompare:
+#    -> Edit -> Scalar fields -> Export coordinate(s) to scalar field
+#    an awk 1-liner could probably get the max/mins much more easily
+#
