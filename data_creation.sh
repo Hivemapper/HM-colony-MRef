@@ -26,7 +26,7 @@ bazel run //hive/hive_scripts/lib/mesh:meshref_converter -- $datafolder/temp $mo
 cp $datafolder/temp/$model_id/camera_data_tf.json $datafolder
 # copy transformed/normalized mesh from the meshref_converter script
 #   over to the mesh folder in datafolder
-mv $datafolder/*_f.ply $datafolder/mesh
+mv $datafolder/temp/*_f.ply $datafolder/mesh
 
 # grab the matches folder to extract geometirc matches file
 sudo cp /mnt/HM/$hostname/hive/waggle/$model_id/reconstruction/matches.tar.gz $datafolder/temp
